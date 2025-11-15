@@ -1,23 +1,38 @@
 // Archivo: backend/server.js
+
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import connectDB from './config/db.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+import productRoutes from "./routes/productRoutes.js"
 
 
+// Cargar variables de entorno
 dotenv.config();
 
-const app = express();
-const PORT = process.env.PORT || 5000;
+// Inicializar la Conexión a MongoDB
+connectDB(); 
 
-// Middleware
-app.use(cors());
+const app = express();
+const PORT = process.env.PORT || 5001;
+
+// MIDDLEWARE
+app.use(cors()); // **IMPORTANTE: Resuelve el 403**
 app.use(express.json());
 
+// RUTAS DE LA API
 app.get('/', (req, res) => {
     res.send('API de Carnicería activa. Bienvenido al backend MERN.');
 });
 
+// Implementación de la ruta
+app.use('/api/categories', categoryRoutes); 
+
+app.use('/api/products', productRoutes); 
+
+
+// LISTENER
 app.listen(PORT, () => {
     console.log(`Server is running on port: ${PORT}`);
-    console.log(`Accede en: http://localhost:${PORT}`);
 });
