@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
-import Category from './models/CategoryModel.js'; 
-import Product from './models/ProductsModel.js';
+import Category from './models/categoryModel.js'; 
+import Product from './models/productModel.js';
 import connectDB from './config/db.js';
 
 // --- CONFIGURACIÓN Y CONEXIÓN ---
