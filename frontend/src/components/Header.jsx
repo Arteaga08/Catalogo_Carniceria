@@ -47,11 +47,28 @@ const Header = () => {
       </div>
 
       {/* Placeholder para la Navegación de Categorías (lo llenaremos después) */}
+      {/* Navegación de Categorías (FINAL) */}
       <nav className="bg-red-800 py-2">
         <div className="container mx-auto px-4">
-          {/* Este div contendrá las pestañas de categorías traídas desde la API */}
-          <div className="flex space-x-4 text-sm font-medium">
-            <span className="opacity-70">Cargando categorías...</span>
+          <div className="flex space-x-4 text-sm font-medium overflow-x-auto">
+            {/* Lógica para mostrar las categorías reales */}
+            {loading ? (
+              <span className="opacity-70">Cargando categorías...</span>
+            ) : (
+              principalCategories.map((principalName) => (
+                <Link
+                  key={principalName}
+                  to="/"
+                  className="px-3 py-1 rounded-full bg-red-700 hover:bg-red-600 transition-colors whitespace-nowrap"
+                >
+                  {principalName}
+                </Link>
+              ))
+            )}
+
+            {!loading && principalCategories.length === 0 && (
+              <span className="text-yellow-400">Error al cargar datos</span>
+            )}
           </div>
         </div>
       </nav>

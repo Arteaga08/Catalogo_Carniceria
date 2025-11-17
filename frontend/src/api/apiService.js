@@ -26,10 +26,21 @@ export const fetchCategories = async () => {
 export const fetchAllProducts = async () => {
   try {
     const response = await axios.get(`${API_BASE_URL}/products`);
-    return response.data;
+    console.log("Respuesta de la API de Productos:", response.data);
+    
+    // 👈 CORRECCIÓN CRÍTICA:
+    // Verifica si la respuesta es un arreglo. Si no lo es, devuelve un arreglo vacío.
+    if (Array.isArray(response.data)) {
+        return response.data;
+    } else {
+        // Esto captura casos donde la API devuelve un objeto vacío {} o un error formateado incorrectamente
+        console.error("La API de productos no devolvió un arreglo.", response.data);
+        return []; 
+    }
   } catch (error) {
+    // Si hay un error de conexión o un 500 del servidor
     console.error("Error al obtener todos los productos:", error);
-    return null;
+    return []; // 👈 Siempre devuelve un arreglo vacío en caso de error
   }
 };
 
