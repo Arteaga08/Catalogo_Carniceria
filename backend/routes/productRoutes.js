@@ -1,21 +1,25 @@
-// Archivo: backend/routes/productRoutes.js
-
-import express from 'express';
-import { 
-    getProducts, 
-    getProductBySlug,
-    getProductsByCategory 
-} from '../controllers/productController.js'; // Importa las funciones del controlador
-
+import express from "express";
 const router = express.Router();
+import {
+  getProducts,
+  getProductBySlug,
+  getProductsByCategory, // Importamos el controlador de filtrado
+} from "../controllers/productController.js";
 
-// Ruta principal: GET /api/products
-router.route('/').get(getProducts);
+// @desc    Obtener productos por categoría (usando el slug en la URL)
+// @route   GET /api/products/category/:slug
+// @access  Public
+router.get("/category/:slug", getProductsByCategory);
 
-// Ruta para productos por categoría: GET /api/products/category/:categorySlug
-router.route('/category/:categorySlug').get(getProductsByCategory);
+// @desc    Obtener todos los productos
+// @route   GET /api/products
+// @access  Public
+router.get("/", getProducts);
 
-// Ruta para un producto específico: GET /api/products/:slug
-router.route('/:slug').get(getProductBySlug);
+// @desc    Obtener un solo producto por slug
+// @route   GET /api/products/:slug
+// @access  Public
+router.get("/:slug", getProductBySlug);
 
+// Usamos export default para ser consistentes con ES Modules
 export default router;
