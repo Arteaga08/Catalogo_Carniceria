@@ -1,77 +1,64 @@
 // Archivo: frontend/src/pages/HomePage.jsx
-import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
-import { fetchAllProducts } from "../api/apiService";
+
+import React, { useState, useEffect } from 'react';
+import { useParams } from 'react-router-dom'; // 👈 Importante
+import { fetchAllProducts, fetchProductsByCategory } from '../api/apiService'; // 👈 Importa ambas
+import ProductCard from '../components/ProductCard'; 
 
 const HomePage = () => {
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
-
+  const { slug } = useParams(); // 👈 Leemos el slug de la URL
+  
+  const pageTitle = slug 
+    ? `Catálogo de ${slug.toUpperCase()}` 
+    : 'Nuestro Catálogo';
+  
   useEffect(() => {
     const loadProducts = async () => {
-      const data = await fetchAllProducts();
-      if (data) {
-        setProducts(data);
+      setLoading(true);
+      let data = [];
+      
+      if (slug) {
+        // Llama a la API de filtrado
+        data = await fetchProductsByCategory(slug);
+      } else {
+        // Llama a la API de todos los productos
+        data = await fetchAllProducts();
       }
+
+      setProducts(data);
       setLoading(false);
     };
 
     loadProducts();
-  }, []);
+    // El efecto se ejecuta cuando 'slug' cambia (navegación)
+  }, [slug]); 
 
   return (
-    <div className="text-center">
-      <h1 className="text-5xl font-bold text-gray-800 mb-4">
-        Nuestro Catálogo
-      </h1>
+    <div className="container mx-auto px-4 py-8">
+      <h2 className="text-4xl font-extrabold text-gray-900 mb-2">
+        {pageTitle}
+      </h2>
       <p className="text-xl text-gray-600 mb-8">
         La carne más fresca a tu mesa.
       </p>
 
-      {/* Indicador de carga */}
-      {loading && <p className="text-gray-500">Cargando productos...</p>}
+      {/* ... (Renderizado condicional de loading/productos) ... */}
 
-      {/* Listado de productos */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-        {products.map((product) => (
-          <div
-            key={product.slug}
-            className="border p-4 rounded-lg shadow-xl bg-white hover:shadow-2xl transition-shadow duration-300"
-          >
-            {/* Imagen del producto (Usamos un placeholder si no hay URL) */}
-            <img
-              src={product.imageURL || "https://via.placeholder.com/150"}
-              alt={product.name}
-              className="w-full h-40 object-cover rounded-lg mb-3"
-            />
-
-            {/* Nombre y precio */}
-            <h2 className="text-xl font-semibold text-red-600 truncate">
-              {product.name}
-            </h2>
-
-            {/* Precio de la primera variación */}
-            <p className="text-2xl font-bold text-gray-900 mt-1">
-              ${product.variations[0]?.price.toFixed(2) || "N/A"}
-            </p>
-
-            {/* Enlace para ver detalles */}
-            <Link
-              to={`/products/${product.slug}`}
-              className="mt-3 inline-block bg-red-700 text-white py-2 px-4 rounded-lg hover:bg-red-600 transition-colors"
-            >
-              Ver Detalle
-            </Link>
-          </div>
-        ))}
-
-        {/* Mensaje si no hay productos */}
-        {!loading && products.length === 0 && (
-          <p className="text-red-500 col-span-full">
-            No se encontraron productos.
-          </p>
-        )}
-      </div>
+      {loading ? (
+        <p className="text-gray-500">Cargando productos...</p>
+      ) : products.length === 0 ? (
+        <p className="text-xl text-red-600 font-semibold">
+          No se encontraron productos en esta categoría.
+        </p>
+      ) : (
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-8">
+          {products.map(product => (
+            <ProductCard key={product._id} product={product} /> 
+          ))}
+        </div>
+      )}
     </div>
   );
 };

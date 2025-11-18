@@ -3,7 +3,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Header from "./components/Header.jsx";
 import Footer from "./components/Footer.jsx";
 import HomePage from "./pages/HomePage.jsx";
-import ProductDetails from "./pages/ProductDetails.jsx";
+import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 
 function App() {
   return (
@@ -18,9 +18,10 @@ function App() {
           <Route path="/" element={<HomePage />} />
 
           {/* Ruta para el detalle del producto: Usa el parámetro ':slug' en la URL */}
-          <Route path="/products/:slug" element={<ProductDetails />} />
+          <Route path="/products/:slug" element={<ProductDetailPage />} />
 
           <Route path="/products/category/:slug" element={<HomePage />} />
+          <Route path="/product/:slug" element={<ProductDetailPage />} />
 
           {/* Ruta de ejemplo para mostrar la página "No Encontrada" (404) */}
           <Route
