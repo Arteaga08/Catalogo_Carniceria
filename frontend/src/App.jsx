@@ -1,42 +1,38 @@
 // Archivo: frontend/src/App.jsx
-import { BrowserRouter, Routes, Route } from "react-router-dom";
-import Header from "./components/Header.jsx";
-import Footer from "./components/Footer.jsx";
-import HomePage from "./pages/HomePage.jsx";
-import ProductDetailPage from "./pages/ProductDetailPage.jsx";
 
-function App() {
+import React from "react";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import Header from "./components/Header";
+import Footer from "./components/Footer";
+import HomePage from "./pages/HomePage";
+import ProductDetailPage from "./pages/ProductDetailPage";
+import { CartProvider } from "./context/CartCotext";
+// 👈 IMPORTAR el CartProvider
+
+// Asegúrate de que este archivo exista: frontend/src/context/CartContext.jsx
+
+const App = () => {
   return (
-    // BrowserRouter: Envuelve toda la aplicación para habilitar la navegación
-    <BrowserRouter>
-      <Header /> {/* Componente visible en todas las rutas */}
-      {/* Contenedor principal para centrar el contenido */}
-      <main className="container mx-auto px-4 py-8">
-        {/* Routes: Aquí definimos las URL y los componentes asociados */}
-        <Routes>
-          {/* Ruta principal: Muestra el componente HomePage */}
-          <Route path="/" element={<HomePage />} />
+    <Router>
+      {/* 👈 ENVOLVER toda la lógica del enrutamiento con CartProvider */}
+      <CartProvider>
+        <Header />
+        <main className="min-h-screen">
+          <Routes>
+            {/* Rutas existentes */}
+            <Route path="/" element={<HomePage />} />
+            <Route path="/products/category/:slug" element={<HomePage />} />
+            <Route path="/product/:slug" element={<ProductDetailPage />} />
 
-          {/* Ruta para el detalle del producto: Usa el parámetro ':slug' en la URL */}
-          <Route path="/products/:slug" element={<ProductDetailPage />} />
-
-          <Route path="/products/category/:slug" element={<HomePage />} />
-          <Route path="/product/:slug" element={<ProductDetailPage />} />
-
-          {/* Ruta de ejemplo para mostrar la página "No Encontrada" (404) */}
-          <Route
-            path="*"
-            element={
-              <h1 className="text-4xl text-red-600">
-                404 - Página no encontrada
-              </h1>
-            }
-          />
-        </Routes>
-      </main>
-      <Footer /> {/* Componente visible en todas las rutas */}
-    </BrowserRouter>
+            {/* Futuras rutas del carrito (por ejemplo, /cart) */}
+            {/* <Route path="/cart" element={<CartPage />} /> */}
+          </Routes>
+        </main>
+        <Footer />
+      </CartProvider>{" "}
+      {/* 👈 CERRAR CartProvider */}
+    </Router>
   );
-}
+};
 
 export default App;

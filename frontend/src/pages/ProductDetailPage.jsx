@@ -10,6 +10,11 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  // Estado para manejar la cantidad seleccionada (por defecto 1.0 Kg)
+  const [quantity, setQuantity] = useState(1.0);
+  // estado intermedio para permitir que el usuario escriba libremente
+  const [quantityInput, setQuantityInput] = useState(quantity.toFixed(1));
+
   // 1. Obtenemos el slug de la URL
   const { slug } = useParams();
 
@@ -48,6 +53,21 @@ const ProductDetailPage = () => {
     // Dependencia del efecto en el slug
   }, [slug]);
 
+  // Mantener sincronizado el input cuando cambie la cantidad programáticamente
+  useEffect(() => {
+    setQuantityInput(quantity.toFixed(1));
+  }, [quantity]);
+
+  const handleAddToCart = () => {
+    if (!product || quantity < 0.5) {
+      alert("Por favor, selecciona una cantidad válida (mínimo 0.5 Kg).");
+      return;
+    }
+
+    // Aquí se integraría con el contexto/carrito: addToCart(product, quantity)
+    alert(`¡Listo para agregar ${quantity.toFixed(1)} Kg de ${product.name} al carrito!`);
+  };
+
   // --- Renderizado Condicional ---
 
   if (loading) {
@@ -84,6 +104,8 @@ const ProductDetailPage = () => {
   const displayPrice =
     product.price || (Array.isArray(product.variations) && product.variations[0]?.price) || null;
 
+  const totalEstimado = displayPrice ? displayPrice * quantity : 0;
+
   return (
     <div className="container mx-auto px-4 py-8">
       <div className="bg-white shadow-xl rounded-lg overflow-hidden">
@@ -106,24 +128,80 @@ const ProductDetailPage = () => {
               {product.name}
             </h1>
 
-            <p className="text-3xl font-black text-gray-800 mb-6">
-              {displayPrice ? `$${Number(displayPrice).toFixed(2)}` : "N/A"}
+            <p className="text-3xl font-black text-gray-800 mb-2">
+              Precio: {displayPrice ? `$${Number(displayPrice).toFixed(2)}` : "N/A"}
               <span className="text-base font-normal text-gray-500"> / Kg</span>
             </p>
 
+            <hr className="my-6" />
+
+            {/* Selector de Cantidad (Kg) */}
+            <h3 className="text-xl font-bold text-gray-800 mb-3">Seleccionar Cantidad</h3>
+            <div className="flex items-center space-x-4 mb-4">
+              <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
+                <button
+                  type="button"
+                  aria-label="Disminuir cantidad"
+                  onClick={() => {
+                    const next = Math.max(0.5, +(quantity - 0.5).toFixed(1));
+                    setQuantity(next);
+                  }}
+                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200"
+                >
+                  −
+                </button>
+                <input
+                  type="number"
+                  inputMode="decimal"
+                  pattern="[0-9]*([.,][0-9]+)?"
+                  value={quantityInput}
+                  onChange={(e) => {
+                    // permitimos que el usuario escriba libremente
+                    setQuantityInput(e.target.value);
+                  }}
+                  onBlur={(e) => {
+                    const raw = e.target.value.replace(",", ".");
+                    const parsed = parseFloat(raw);
+                    const next = isNaN(parsed) ? 1.0 : Math.max(0.5, parsed);
+                    setQuantity(next);
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") e.currentTarget.blur();
+                  }}
+                  min="0.5"
+                  step="0.5"
+                  className="w-28 text-center p-3 text-xl font-semibold focus:border-red-500 focus:outline-none"
+                  disabled={displayPrice === null}
+                />
+                <button
+                  type="button"
+                  aria-label="Aumentar cantidad"
+                  onClick={() => {
+                    const next = +(quantity + 0.5).toFixed(1);
+                    setQuantity(next);
+                  }}
+                  className="px-3 py-2 bg-gray-100 hover:bg-gray-200"
+                >
+                  +
+                </button>
+              </div>
+              <span className="text-xl text-gray-700 font-semibold">Kg</span>
+            </div>
+
+            {/* Costo Total Estimado */}
+            <p className="text-3xl font-black text-red-700 mb-8">Total: ${totalEstimado.toFixed(2)}</p>
+
             {/* Descripción */}
-            <h3 className="text-xl font-bold text-gray-800 mb-2">
-              Descripción
-            </h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">Descripción</h3>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              {product.description ||
-                "Este producto no tiene una descripción detallada disponible."}
+              {product.description || "Este producto no tiene una descripción detallada disponible."}
             </p>
 
             {/* Botón de Añadir al Carrito */}
             <button
-              className="w-full md:w-auto bg-red-700 text-white text-xl py-3 px-8 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg"
-              onClick={() => console.log("Añadir al carrito:", product.name)}
+              className="w-full md:w-auto bg-red-700 text-white text-xl py-3 px-8 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg disabled:bg-gray-400"
+              onClick={handleAddToCart}
+              disabled={displayPrice === null || quantity < 0.5}
             >
               🛒 Añadir al Carrito
             </button>
