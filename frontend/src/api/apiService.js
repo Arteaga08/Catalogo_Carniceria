@@ -1,76 +1,66 @@
-import axios from "axios";
+// Archivo: frontend/src/api/apiService.js
 
-// La URL base es solo '/api' porque configuramos el proxy en vite.config.js
-// Esto se traduce automáticamente a http://localhost:5001/api en desarrollo.
-const API_BASE_URL = "/api";
+// ... (asegúrate de que tu URL base sea correcta)
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
-/**
- * @desc Obtiene todas las categorías agrupadas por categoryPrincipal.
- * @route GET /api/categories
- */
-export const fetchCategories = async () => {
+// 1. MODIFICAR fetchProducts para aceptar un slug de subcategoría opcional
+export const fetchProducts = async (slug = null) => {
   try {
-    const response = await axios.get(`${API_BASE_URL}/categories`);
-    // Devuelve los datos agrupados, listos para usar en el Header
-    return response.data;
-  } catch (error) {
-    console.error("Error al obtener categorías:", error);
-    return null;
-  }
-};
+    let url = `${API_URL}/products`;
 
-/**
- * @desc Obtiene todos los productos.
- * @route GET /api/products
- */
-export const fetchAllProducts = async () => {
-  try {
-    const response = await axios.get(`${API_BASE_URL}/products`);
-    console.log("Respuesta de la API de Productos:", response.data);
-
-    // 👈 CORRECCIÓN CRÍTICA:
-    // Verifica si la respuesta es un arreglo. Si no lo es, devuelve un arreglo vacío.
-    if (Array.isArray(response.data)) {
-      return response.data;
-    } else {
-      // Esto captura casos donde la API devuelve un objeto vacío {} o un error formateado incorrectamente
-      console.error(
-        "La API de productos no devolvió un arreglo.",
-        response.data
-      );
-      return [];
+    if (slug) {
+      url = `${API_URL}/products/category/${slug}`;
     }
-  } catch (error) {
-    // Si hay un error de conexión o un 500 del servidor
-    console.error("Error al obtener todos los productos:", error);
-    return []; // 👈 Siempre devuelve un arreglo vacío en caso de error
-  }
-};
 
-export const fetchProductsByCategory = async (categorySlug) => {
-  try {
-    const { data } = await axios.get(
-      `${API_BASE_URL}/products/category/${categorySlug}`
-    );
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      // Manejamos el caso de que la API devuelva un error (ej. 404 si la categoría no existe)
+      if (response.status === 404) {
+        // Si no hay productos en la categoría, devolvemos un array vacío en lugar de lanzar error
+        return [];
+      }
+      throw new Error(`Error al obtener productos: ${response.statusText}`);
+    }
+
+    const data = await response.json();
     return data;
   } catch (error) {
-    if (error.response && error.response.status === 404) {
-      return [];
-    }
-    console.error(
-      `Error fetching products for category ${categorySlug}:`,
-      error
-    );
-    return [];
+    console.error("Error en fetchProducts:", error);
+    throw error; // Propagar el error para que lo maneje el componente
   }
 };
 
+// 2. fetchProductBySlug permanece igual
 export const fetchProductBySlug = async (slug) => {
   try {
-    const { data } = await axios.get(`${API_BASE_URL}/products/${slug}`);
+    const response = await fetch(`${API_URL}/products/${slug}`);
+
+    if (!response.ok) {
+      throw new Error(`Producto no encontrado: ${response.statusText}`);
+    }
+
+    const data = await response.json();
     return data;
   } catch (error) {
-    console.error(`Error fetching product with slug ${slug}:`, error);
-    return null;
+    console.error("Error en fetchProductBySlug:", error);
+    throw error;
+  }
+};
+
+// 3. fetchCategories permanece igual
+export const fetchCategories = async () => {
+  try {
+    const response = await fetch(`${API_URL}/categories`);
+
+    if (!response.ok) {
+      throw new Error(`Error al obtener categorías: ${response.statusText}`);
+    }
+
+    const data = await response.json();
+    return data; // Debería devolver el objeto de categorías agrupadas
+  } catch (error) {
+    console.error("Error en fetchCategories:", error);
+    throw error;
   }
 };

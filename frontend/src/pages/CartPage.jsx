@@ -78,7 +78,9 @@ const CartPage = () => {
               {/* Imagen */}
               <div className="flex items-center justify-center">
                 <img
-                  src={item.imageURL || "https://via.placeholder.com/80?text=🥩"}
+                  src={
+                    item.imageURL || "https://via.placeholder.com/80?text=🥩"
+                  }
                   alt={item.name}
                   className="w-20 h-20 object-cover rounded-md"
                 />
@@ -92,9 +94,13 @@ const CartPage = () => {
                 >
                   {item.name}
                 </Link>
-                <p className="text-sm text-gray-500 mt-1">${item.price.toFixed(2)} / Kg</p>
+                <p className="text-sm text-gray-500 mt-1">
+                  ${item.price.toFixed(2)} / Kg
+                </p>
                 {item.description && (
-                  <p className="text-sm text-gray-600 mt-2 line-clamp-2">{item.description}</p>
+                  <p className="text-sm text-gray-600 mt-2 line-clamp-2">
+                    {item.description}
+                  </p>
                 )}
               </div>
 
@@ -105,8 +111,18 @@ const CartPage = () => {
                     <button
                       type="button"
                       aria-label="Disminuir cantidad"
-                      onClick={() => updateQuantity(item.productId, Math.max(0.5, item.quantity - 0.5))}
-                      className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-base"
+                      onClick={() =>
+                        updateQuantity(
+                          item.productId,
+                          Math.max(0.5, item.quantity - 0.5)
+                        )
+                      }
+                      disabled={item.quantity <= 0.5}
+                      className={`px-3 py-1 text-base ${
+                        item.quantity <= 0.5
+                          ? "bg-gray-300 text-gray-500 cursor-not-allowed" // Estilo deshabilitado
+                          : "bg-gray-100 hover:bg-gray-200" // Estilo normal
+                      }`}
                     >
                       −
                     </button>
@@ -123,7 +139,9 @@ const CartPage = () => {
                     <button
                       type="button"
                       aria-label="Aumentar cantidad"
-                      onClick={() => updateQuantity(item.productId, item.quantity + 0.5)}
+                      onClick={() =>
+                        updateQuantity(item.productId, item.quantity + 0.5)
+                      }
                       className="px-3 py-1 bg-gray-100 hover:bg-gray-200 text-base"
                     >
                       +
