@@ -3,12 +3,14 @@ import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { fetchCategories } from "../api/apiService";
 import SideBar from "./SideBar";
+import { useCart } from "../context/CartCotext";
 
 const Header = () => {
   const [groupedCategories, setGroupedCategories] = useState({});
   const [loading, setLoading] = useState(true);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const {cartCount} = useCart();
 
   useEffect(() => {
     const loadCategories = async () => {
@@ -75,9 +77,9 @@ const Header = () => {
           <div>
             <Link
               to="/cart"
-              className="text-xl hover:text-red-300 transition-colors ml-2"
+              className="text-xl hover:text-red-300 transition-colors ml-2 flex items-center"
             >
-              🛒 Carrito (0)
+              🛒 Carrito ({cartCount})
             </Link>
           </div>
         </div>

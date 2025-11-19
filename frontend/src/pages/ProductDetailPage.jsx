@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 // Asegúrate que esta importación apunte al archivo apiService.js correcto
 import { fetchProductBySlug } from "../api/apiService";
+import { useCart } from "../context/CartCotext";
 
 const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
@@ -17,6 +18,7 @@ const ProductDetailPage = () => {
 
   // 1. Obtenemos el slug de la URL
   const { slug } = useParams();
+  const { addToCart } = useCart();
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -63,9 +65,13 @@ const ProductDetailPage = () => {
       alert("Por favor, selecciona una cantidad válida (mínimo 0.5 Kg).");
       return;
     }
-
+    addToCart(product, quantity);
     // Aquí se integraría con el contexto/carrito: addToCart(product, quantity)
-    alert(`¡Listo para agregar ${quantity.toFixed(1)} Kg de ${product.name} al carrito!`);
+    alert(
+      `¡Listo para agregar ${quantity.toFixed(1)} Kg de ${
+        product.name
+      } al carrito!`
+    );
   };
 
   // --- Renderizado Condicional ---
@@ -100,9 +106,12 @@ const ProductDetailPage = () => {
 
   // Compatibilidad con el esquema de backend: algunos productos guardan la categoría
   // en `categorySlug` y el precio dentro de `variations`.
-  const displayCategory = product.category || product.categorySlug || "Categoría";
+  const displayCategory =
+    product.category || product.categorySlug || "Categoría";
   const displayPrice =
-    product.price || (Array.isArray(product.variations) && product.variations[0]?.price) || null;
+    product.price ||
+    (Array.isArray(product.variations) && product.variations[0]?.price) ||
+    null;
 
   const totalEstimado = displayPrice ? displayPrice * quantity : 0;
 
@@ -129,14 +138,17 @@ const ProductDetailPage = () => {
             </h1>
 
             <p className="text-3xl font-black text-gray-800 mb-2">
-              Precio: {displayPrice ? `$${Number(displayPrice).toFixed(2)}` : "N/A"}
+              Precio:{" "}
+              {displayPrice ? `$${Number(displayPrice).toFixed(2)}` : "N/A"}
               <span className="text-base font-normal text-gray-500"> / Kg</span>
             </p>
 
             <hr className="my-6" />
 
             {/* Selector de Cantidad (Kg) */}
-            <h3 className="text-xl font-bold text-gray-800 mb-3">Seleccionar Cantidad</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-3">
+              Seleccionar Cantidad
+            </h3>
             <div className="flex items-center space-x-4 mb-4">
               <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
                 <button
@@ -189,12 +201,17 @@ const ProductDetailPage = () => {
             </div>
 
             {/* Costo Total Estimado */}
-            <p className="text-3xl font-black text-red-700 mb-8">Total: ${totalEstimado.toFixed(2)}</p>
+            <p className="text-3xl font-black text-red-700 mb-8">
+              Total: ${totalEstimado.toFixed(2)}
+            </p>
 
             {/* Descripción */}
-            <h3 className="text-xl font-bold text-gray-800 mb-2">Descripción</h3>
+            <h3 className="text-xl font-bold text-gray-800 mb-2">
+              Descripción
+            </h3>
             <p className="text-gray-600 mb-8 leading-relaxed">
-              {product.description || "Este producto no tiene una descripción detallada disponible."}
+              {product.description ||
+                "Este producto no tiene una descripción detallada disponible."}
             </p>
 
             {/* Botón de Añadir al Carrito */}
