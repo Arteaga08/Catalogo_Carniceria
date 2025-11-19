@@ -27,7 +27,7 @@ const SideBar = ({ isOpen, onClose, categories, handleLinkClick }) => {
 
       {/* Menú Lateral (Sidebar) */}
       <div
-        className={`fixed top-0 left-0 h-full w-64 bg-white shadow-2xl z-50 
+        className={`fixed top-0 left-0 h-full w-11/12 sm:w-64 bg-white shadow-2xl z-50 
         transform transition-transform duration-300 ease-in-out
         ${isOpen ? "translate-x-0" : "-translate-x-full"}`}
       >

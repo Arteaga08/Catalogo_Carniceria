@@ -79,7 +79,7 @@ const Header = () => {
               to="/cart"
               className="text-xl hover:text-red-300 transition-colors ml-2 flex items-center"
             >
-              🛒 Carrito ({cartCount})
+              🛒 Carrito ({Math.floor(cartCount)})
             </Link>
           </div>
         </div>
@@ -88,7 +88,7 @@ const Header = () => {
         {/* Siempre visible, con scroll horizontal en móvil */}
         <nav className="bg-red-800 py-2">
           <div className="container mx-auto px-4">
-            <div className="flex space-x-2 text-sm font-medium overflow-x-scroll pb-1">
+            <div className="flex space-x-2 text-sm font-medium overflow-x-auto pb-1 max-w-full">
               {loading ? (
                 <span className="opacity-70 whitespace-nowrap">
                   Cargando categorías...
@@ -133,7 +133,7 @@ const Header = () => {
 
                     {/* MENÚ DESPLEGABLE (SUBMENÚ) con Imágenes Circulares */}
                     {openDropdown === principalName && (
-                      <div className="absolute right-0 md:left-0 mt-2 py-2 w-80 bg-white rounded-md shadow-xl z-50">
+                      <div className="hidden md:block absolute right-0 md:left-0 mt-2 py-2 md:w-80 w-auto max-w-[90vw] bg-white rounded-md shadow-xl z-50">
                         {groupedCategories[principalName].map((subCategory) => (
                           <Link
                             key={subCategory.slug}
