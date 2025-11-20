@@ -33,7 +33,7 @@ const SideBar = ({ isOpen, onClose, categories, handleLinkClick }) => {
       >
         {/* Encabezado del Sidebar */}
         <div className="p-4 bg-red-700 text-white flex justify-between items-center">
-          <h3 className="text-xl font-bold">Menú de Carnes</h3>
+          <h3 className="text-xl font-bold">Carniceria Meño</h3>
           <button
             onClick={onClose}
             className="text-2xl hover:text-red-300 transition-colors"

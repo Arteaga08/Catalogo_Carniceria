@@ -1,65 +1,55 @@
-// Archivo: frontend/src/components/CategoryNavigator.jsx
+import React, { useState, useEffect } from "react";
+import { Link, useNavigate } from "react-router-dom";
+import { fetchCategories } from "../api/apiService";
+import SideBar from "./SideBar";
+import { useCart } from "../context/CartCotext";
+// 👈 IMPORTAR EL COMPONENTE CategoryNavigator AQUÍ
+import CategoryNavigator from "../pages/CategoryNavigator"; // Asegúrate de ajustar la ruta si no está en pages
 
-import React from "react";
-import { Link } from "react-router-dom";
+const Header = () => {
+  const [groupedCategories, setGroupedCategories] = useState({});
+  // ... (resto de estados) ...
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const navigate = useNavigate();
 
-const CategoryNavigator = ({ categories }) => {
-  // categories es el objeto agrupado: { "CARNICERÍA": [ {slug, name, imageURL}, ... ], ... }
-  const principalCategories = Object.keys(categories);
+  // Lógica de carga de categorías
+  useEffect(() => {
+    // ... (Lógica de carga de categorías sin cambios) ...
+  }, []);
 
-  if (principalCategories.length === 0) {
-    return null; // No renderizar si no hay categorías
-  }
-
-  // Función para obtener la imagen de la primera subcategoría como representación del grupo principal.
-  const getPrincipalCategoryImage = (principalName) => {
-    // Tomamos la imagen de la primera subcategoría del grupo
-    const firstSubCategory = categories[principalName][0];
-    return firstSubCategory ? firstSubCategory.imageURL : null;
-  };
+  // ... (resto de funciones sin cambios) ...
 
   return (
-    <div className="bg-white py-4 shadow-inner">
-      <div className="container mx-auto px-4">
-        <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Nuestro Catálogo
-        </h2>
+    <>
+      {/* 1. Header principal */}
+      <header className="bg-red-700 text-white shadow-lg sticky top-0 z-50">
+        // ... (Contenido del header principal sin cambios) ...
+      </header>
 
-        {/* Contenedor principal con scroll horizontal y sin envoltura (flex-nowrap) */}
-        <div className="flex space-x-4 overflow-x-scroll pb-2 whitespace-nowrap scrollbar-hide max-w-full">
-          {principalCategories.map((principalName) => {
-            const imageUrl = getPrincipalCategoryImage(principalName);
-
-            // Enlace que dirige a la primera subcategoría del grupo principal
-            const linkSlug = categories[principalName][0]?.slug;
-
-            return (
-              <Link
-                key={principalName}
-                // Usamos la ruta de filtrado de productos por categoría
-                to={`/products/category/${linkSlug}`}
-                className="flex flex-col items-center justify-start w-28 md:w-36 lg:w-40 shrink-0 p-2 rounded-lg hover:bg-red-50 transition-colors group"
-              >
-                {/* Imagen Circular de la Categoría */}
-                <div className="w-16 h-16 md:w-20 md:h-20 bg-gray-100 rounded-full overflow-hidden mb-2 shadow-md border-2 border-transparent group-hover:border-red-500 transition-all">
-                  <img
-                    src={imageUrl || "https://via.placeholder.com/80?text=🥩"}
-                    alt={principalName}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-
-                {/* Nombre de la Categoría */}
-                <span className="text-sm font-semibold text-gray-800 text-center group-hover:text-red-700 transition-colors whitespace-normal wrap-break-wordbreak-words h-10 flex items-center justify-center leading-tight">
-                  {principalName}
-                </span>
-              </Link>
-            );
-          })}
+      {/* 2. NUEVA SECCIÓN DE NAVEGACIÓN DE CATEGORÍAS (CÍRCULOS) */}
+      {/* Usamos una sección blanca para que los círculos se vean bien */}
+      <section className="bg-white shadow-md py-4 w-full sticky top-16 z-40">
+        <div className="container mx-auto px-4">
+          {/* Centrado y Deslizamiento Horizontal */}
+          {loading ? (
+            <div className="text-center text-gray-500">
+              Cargando categorías...
+            </div>
+          ) : (
+            <div className="w-full flex justify-center items-center overflow-x-auto pb-2">
+              {/* El componente CategoryNavigator espera 'categories' */}
+              <CategoryNavigator categories={groupedCategories} />
+            </div>
+          )}
         </div>
-      </div>
-    </div>
+      </section>
+
+      {/* 3. Componente Sidebar (Menú Lateral) */}
+      <SideBar
+      // ... (props sin cambios) ...
+      />
+    </>
   );
 };
 
-export default CategoryNavigator;
+export default Header;

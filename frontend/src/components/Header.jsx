@@ -1,5 +1,3 @@
-// Archivo: frontend/src/components/Header.jsx
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchCategories } from "../api/apiService";
@@ -13,12 +11,10 @@ const Header = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { cartCount } = useCart();
 
-  // ESTADOS DE BÚSQUEDA
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const navigate = useNavigate();
 
-  // ... (Lógica de carga de categorías y helpers) ...
   useEffect(() => {
     const loadCategories = async () => {
       const data = await fetchCategories();
@@ -67,7 +63,7 @@ const Header = () => {
       {/* 1. Header principal */}
       <header className="bg-red-700 text-white shadow-lg sticky top-0 z-50">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center relative">
-          {/* BOTÓN DEL MENÚ LATERAL (IZQUIERDA) */}
+          {/* Botón Menú Lateral */}
           <button
             onClick={() => setIsSidebarOpen(true)}
             className="text-3xl p-2 rounded hover:bg-red-600 transition-colors mr-2 shrink-0"
@@ -76,21 +72,17 @@ const Header = () => {
             ☰
           </button>
 
-          {/* Enlace al Home */}
-          {/* CORRECCIÓN 1.1: Agregamos flex-1 al logo para que use el espacio restante en móvil 
-             cuando la búsqueda no está expandida, evitando que el carrito se comprima. */}
+          {/* Logo */}
           <Link
             to="/"
             className={`text-2xl md:text-3xl font-extrabold tracking-tight hover:text-red-300 transition-colors flex-1 md:flex-none ${
               isSearchExpanded ? "hidden sm:block" : ""
             }`}
           >
-            🥩 Carniceria
+          Carniceria Meño
           </Link>
 
-          {/* CONTENEDOR DE BÚSQUEDA */}
-          {/* CORRECCIÓN 1.2: Quitamos la clase 'flex-1' cuando la búsqueda no está expandida en móvil. 
-             Solo dejamos que se comporte como un contenedor normal para el ícono. */}
+          {/* Buscador */}
           <div
             className={`flex items-center justify-end ${
               isSearchExpanded
@@ -98,7 +90,6 @@ const Header = () => {
                 : "md:flex-1 md:max-w-lg"
             }`}
           >
-            {/* FORMULARIO DE BÚSQUEDA */}
             <form
               onSubmit={handleSearchSubmit}
               className={`flex transition-all duration-300 ${
@@ -109,13 +100,12 @@ const Header = () => {
                 type="text"
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar cortes o paquetes..."
+                placeholder="Buscar cortes..."
                 className="w-full p-2 rounded-l-md border-none focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-800"
               />
               <button
                 type="submit"
                 className="bg-red-500 hover:bg-red-600 p-2 text-white rounded-r-md transition-colors"
-                aria-label="Buscar producto"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -134,13 +124,11 @@ const Header = () => {
               </button>
             </form>
 
-            {/* BOTÓN DE LUPA */}
             <button
               onClick={() => setIsSearchExpanded(true)}
               className={`p-2 rounded hover:bg-red-600 transition-colors md:hidden ${
                 isSearchExpanded ? "hidden" : "block"
               }`}
-              aria-label="Expandir búsqueda"
             >
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -158,7 +146,6 @@ const Header = () => {
               </svg>
             </button>
 
-            {/* BOTÓN DE CERRAR (X) */}
             {isSearchExpanded && (
               <button
                 onClick={() => {
@@ -166,7 +153,6 @@ const Header = () => {
                   setSearchTerm("");
                 }}
                 className="p-2 rounded hover:bg-red-600 transition-colors md:hidden absolute right-4"
-                aria-label="Cerrar búsqueda"
               >
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
@@ -187,7 +173,7 @@ const Header = () => {
             )}
           </div>
 
-          {/* Sección de Carrito */}
+          {/* Carrito */}
           <div className={`shrink-0 ${isSearchExpanded ? "hidden" : "block"}`}>
             <Link
               to="/cart"
@@ -198,10 +184,11 @@ const Header = () => {
           </div>
         </div>
 
-        {/* 2. Navegación de Categorías con Dropdowns */}
-        <nav className="bg-red-800 py-2">
+        {/* 2. NAVEGACIÓN DE CATEGORÍAS (TRANSFORMABLE) */}
+        <nav className="bg-red-800 py-3 md:py-2 shadow-inner">
           <div className="container mx-auto px-4">
-            <div className="flex space-x-2 text-sm font-medium overflow-x-auto pb-1 max-w-full">
+            {/* Contenedor Flex: Scroll en móvil, Wrap en desktop */}
+            <div className="flex md:flex-wrap gap-4 md:gap-2 overflow-x-auto pb-2 md:pb-0 justify-start md:justify-center scrollbar-hide">
               {loading ? (
                 <span className="opacity-70 whitespace-nowrap">
                   Cargando categorías...
@@ -215,20 +202,32 @@ const Header = () => {
                     onMouseLeave={() => setOpenDropdown(null)}
                   >
                     <button
-                      className="px-3 py-1 rounded-full bg-red-700 hover:bg-red-600 transition-colors whitespace-nowrap flex items-center"
+                      // AQUI ESTA LA MAGIA DEL DISEÑO RESPONSIVO:
+                      // Móvil (default): flex-col (imagen arriba, texto abajo), sin fondo.
+                      // Desktop (md:): flex-row (imagen lado, texto lado), fondo rojo (botón).
+                      className="flex flex-col md:flex-row items-center justify-center md:px-3 md:py-1 md:rounded-full md:bg-red-700 md:hover:bg-red-600 transition-all"
                       onClick={() => handleDropdownToggle(principalName)}
                     >
+                      {/* IMAGEN */}
+                      {/* Móvil: Grande (w-14 h-14) y borde blanco. Desktop: Pequeña (w-6 h-6) y borde rojo. */}
                       <img
                         src={
                           getPrincipalCategoryImage(principalName) ||
-                          "https://via.placeholder.com/24?text=🥩"
+                          "https://via.placeholder.com/40?text=🥩"
                         }
                         alt={principalName}
-                        className="w-6 h-6 object-cover rounded-full mr-2 border border-red-500"
+                        className="w-14 h-14 md:w-6 md:h-6 object-cover rounded-full border-2 border-white md:border-red-500 mb-1 md:mb-0 md:mr-2 shadow-md md:shadow-none transition-transform hover:scale-105"
                       />
-                      {principalName}
+
+                      {/* TEXTO */}
+                      {/* Móvil: Texto pequeño. Desktop: Texto normal. */}
+                      <span className="text-xs md:text-sm font-semibold whitespace-nowrap">
+                        {principalName}
+                      </span>
+
+                      {/* FLECHA (Solo visible en Desktop) */}
                       <svg
-                        className="w-4 h-4 ml-1"
+                        className="w-4 h-4 ml-1 hidden md:block"
                         fill="none"
                         stroke="currentColor"
                         viewBox="0 0 24 24"
@@ -243,10 +242,9 @@ const Header = () => {
                       </svg>
                     </button>
 
-                    {/* MENÚ DESPLEGABLE (SUBMENÚ) con Imágenes Circulares */}
-                    {/* CORRECCIÓN 2: Eliminamos 'hidden md:block' para que el dropdown sea visible en móvil al hacer clic */}
+                    {/* DROPDOWN (Solo visible en Desktop al hacer hover, o click en móvil si se desea lógica extra) */}
                     {openDropdown === principalName && (
-                      <div className="absolute right-0 md:left-0 mt-2 py-2 md:w-80 w-auto max-w-[90vw] bg-white rounded-md shadow-xl z-50">
+                      <div className="absolute left-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-50 hidden md:block">
                         {groupedCategories[principalName].map((subCategory) => (
                           <Link
                             key={subCategory.slug}
@@ -257,14 +255,12 @@ const Header = () => {
                             <img
                               src={
                                 subCategory.imageURL ||
-                                "https://via.placeholder.com/40?text=🥩"
+                                "https://via.placeholder.com/40"
                               }
                               alt={subCategory.name}
-                              className="w-10 h-10 object-cover rounded-full mr-4 border border-gray-200"
+                              className="w-8 h-8 object-cover rounded-full mr-3"
                             />
-                            <span className="font-medium">
-                              {subCategory.name}
-                            </span>
+                            {subCategory.name}
                           </Link>
                         ))}
                       </div>
@@ -277,7 +273,7 @@ const Header = () => {
         </nav>
       </header>
 
-      {/* 3. Componente Sidebar (Menú Lateral) */}
+      {/* 3. Sidebar */}
       <SideBar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
