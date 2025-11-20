@@ -3,7 +3,7 @@ import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
-import ProductDetailPage from "./pages/ProductDetailPage";
+import ProductPage from "./pages/ProductPage"
 import CartPage from "./pages/CartPage";
 
 import { CartProvider } from "./context/CartCotext";
@@ -22,7 +22,7 @@ const App = () => {
             {/* Rutas existentes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/products/category/:slug" element={<HomePage />} />
-            <Route path="/product/:slug" element={<ProductDetailPage />} />
+            <Route path="/product/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
 
             {/* Futuras rutas del carrito (por ejemplo, /cart) */}

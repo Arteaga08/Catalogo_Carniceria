@@ -3,9 +3,12 @@ const router = express.Router();
 import {
   getProducts,
   getProductBySlug,
-  getProductsByCategory, // Importamos el controlador de filtrado
+  getProductsByCategory,
+  searchProducts,
 } from "../controllers/productController.js";
 
+
+router.get('/search', searchProducts);
 // @desc    Obtener productos por categoría (usando el slug en la URL)
 // @route   GET /api/products/category/:slug
 // @access  Public
@@ -21,5 +24,6 @@ router.get("/", getProducts);
 // @access  Public
 router.get("/:slug", getProductBySlug);
 
-// Usamos export default para ser consistentes con ES Modules
+router.get('/search', searchProducts);
+
 export default router;

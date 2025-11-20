@@ -22,7 +22,7 @@ const CategoryNavigator = ({ categories }) => {
     <div className="bg-white py-4 shadow-inner">
       <div className="container mx-auto px-4">
         <h2 className="text-2xl font-bold text-gray-800 mb-4">
-          Explora por Sección
+          Nuestro Catálogo
         </h2>
 
         {/* Contenedor principal con scroll horizontal y sin envoltura (flex-nowrap) */}

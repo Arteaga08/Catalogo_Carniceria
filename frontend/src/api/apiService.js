@@ -64,3 +64,20 @@ export const fetchCategories = async () => {
     throw error;
   }
 };
+
+// 4. Nueva función para buscar productos por nombre o descripción
+export const searchProducts = async (query) => {
+    try {
+        // Asegúrate de que esta URL apunta a tu ruta de backend de búsqueda
+        const response = await fetch(`${API_URL}/products/search?q=${query}`); 
+        
+        if (!response.ok) {
+            throw new Error('Fallo al buscar productos');
+        }
+        
+        return await response.json();
+    } catch (error) {
+        console.error("Error en searchProducts:", error);
+        return [];
+    }
+};

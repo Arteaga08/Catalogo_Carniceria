@@ -46,33 +46,63 @@ const getProductBySlug = async (req, res) => {
  */
 const getProductsByCategory = async (req, res) => {
   try {
-    // 1. Obtener el slug usando el nombre del parámetro de la ruta ('slug')
     const { slug } = req.params;
 
-    // 2. Filtrar por el campo 'category' en tu modelo de Producto.
-    // Usamos $regex y 'i' para que la búsqueda sea insensible a mayúsculas/minúsculas.
     const products = await Product.find({
       category: { $regex: new RegExp(slug, "i") },
     });
 
     if (products.length === 0) {
-      // Si no se encuentran productos, devolvemos un 404 informativo (opcional pero recomendado)
       return res
         .status(404)
         .json({ message: "No se encontraron productos para esta categoría." });
     }
 
-    // Devuelve los productos encontrados
     res.json(products);
   } catch (error) {
     console.error(`Error al obtener productos por categoría: ${error.message}`);
-    res
-      .status(500)
-      .json({
-        message: "Error interno del servidor al filtrar productos.",
-        error: error.message,
-      });
+    res.status(500).json({
+      message: "Error interno del servidor al filtrar productos.",
+      error: error.message,
+    });
   }
 };
 
-export { getProducts, getProductBySlug, getProductsByCategory };
+/**
+ * @desc    Busca productos por nombre o descripción
+ * @route   GET /api/products/search?q=query
+ * @access  Public
+ */
+const searchProducts = async (req, res) => {
+  try {
+    // 1. Capturar el término de búsqueda de los query parameters (?q=...)
+    const keyword = req.query.q
+      ? {
+          // Usamos $or para buscar en múltiples campos
+          $or: [
+            {
+              // $regex permite buscar coincidencias parciales. 'i' hace que sea case-insensitive.
+              name: { $regex: req.query.q, $options: "i" },
+            },
+            {
+              description: { $regex: req.query.q, $options: "i" },
+            },
+          ],
+        }
+      : {}; // Si no hay query, devolvemos un objeto vacío para evitar errores (aunque el frontend debe enviar 'q')
+
+    // 2. Ejecutar la búsqueda en la base de datos
+    const products = await Product.find({ ...keyword });
+
+    // 3. Devolver los resultados
+    res.json(products);
+  } catch (error) {
+    console.error(`Error en la búsqueda de productos: ${error.message}`);
+    res.status(500).json({
+      message: "Error interno del servidor durante la búsqueda.",
+      error: error.message,
+    });
+  }
+};
+
+export { getProducts, getProductBySlug, getProductsByCategory, searchProducts };
