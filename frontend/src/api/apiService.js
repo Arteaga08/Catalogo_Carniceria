@@ -1,33 +1,43 @@
 // Archivo: frontend/src/api/apiService.js
-
+import axios from "axios";
 // ... (asegúrate de que tu URL base sea correcta)
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
 // 1. MODIFICAR fetchProducts para aceptar un slug de subcategoría opcional
-export const fetchProducts = async (slug = null) => {
+export const fetchProducts = async (
+  categorySlug = null,
+  searchTerm = null,
+  limit = null
+) => {
+  let url = "/api/products";
+  const params = new URLSearchParams();
+
+  // Lógica de filtrado por categoría
+  if (categorySlug) {
+    params.append("category", categorySlug);
+  }
+
+  // Lógica de filtrado por búsqueda
+  if (searchTerm) {
+    params.append("q", searchTerm);
+  }
+
+  // ✨ 2. NUEVA LÓGICA DE LÍMITE ✨
+  if (limit) {
+    params.append("limit", limit);
+  }
+
+  if (params.toString()) {
+    url = `${url}?${params.toString()}`;
+  }
+
   try {
-    let url = `${API_URL}/products`;
-
-    if (slug) {
-      url = `${API_URL}/products/category/${slug}`;
-    }
-
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      // Manejamos el caso de que la API devuelva un error (ej. 404 si la categoría no existe)
-      if (response.status === 404) {
-        // Si no hay productos en la categoría, devolvemos un array vacío en lugar de lanzar error
-        return [];
-      }
-      throw new Error(`Error al obtener productos: ${response.statusText}`);
-    }
-
-    const data = await response.json();
-    return data;
+    // Asegúrate de que 'axios' esté importado si aún no lo está
+    const response = await axios.get(url);
+    return response.data;
   } catch (error) {
-    console.error("Error en fetchProducts:", error);
-    throw error; // Propagar el error para que lo maneje el componente
+    console.error("Error fetching products:", error);
+    return [];
   }
 };
 
@@ -67,17 +77,17 @@ export const fetchCategories = async () => {
 
 // 4. Nueva función para buscar productos por nombre o descripción
 export const searchProducts = async (query) => {
-    try {
-        // Asegúrate de que esta URL apunta a tu ruta de backend de búsqueda
-        const response = await fetch(`${API_URL}/products/search?q=${query}`); 
-        
-        if (!response.ok) {
-            throw new Error('Fallo al buscar productos');
-        }
-        
-        return await response.json();
-    } catch (error) {
-        console.error("Error en searchProducts:", error);
-        return [];
+  try {
+    // Asegúrate de que esta URL apunta a tu ruta de backend de búsqueda
+    const response = await fetch(`${API_URL}/products/search?q=${query}`);
+
+    if (!response.ok) {
+      throw new Error("Fallo al buscar productos");
     }
+
+    return await response.json();
+  } catch (error) {
+    console.error("Error en searchProducts:", error);
+    return [];
+  }
 };

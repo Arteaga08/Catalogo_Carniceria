@@ -8,13 +8,35 @@ import Product from "../models/ProductModel.js"; // Asegúrate que el nombre del
  * @access  Public
  */
 const getProducts = async (req, res) => {
+  const { category: categorySlug, q, limit } = req.query;
+
   try {
-    const products = await Product.find({});
-    res.json(products);
+    let query = {};
+
+    if (categorySlug) {
+      query.categorySlug = categorySlug;
+    }
+    if (q) {
+      query.name = { $regex: q, $options: "i" };
+    }
+
+    let mongooseQuery = Product.find(query);
+    if (limit) {
+      const numLimit = parseInt(limit, 10);
+
+      if (!isNaN(numLimit) && numLimit > 0) {
+        mongooseQuery = mongooseQuery.limit(numLimit);
+      }
+    }
+
+    const products = await mongooseQuery;
+
+    res.status(200).json(products);
   } catch (error) {
+    console.error("Error al obtener productos:", error);
     res
       .status(500)
-      .json({ message: "Error fetching products", error: error.message });
+      .json({ message: "Error interno del servidor.", error: error.message });
   }
 };
 

@@ -1,5 +1,3 @@
-// Archivo: frontend/src/pages/HomePage.jsx
-
 import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { fetchProducts, searchProducts } from "../api/apiService";
@@ -11,13 +9,14 @@ const useQuery = () => {
 };
 
 const HomePage = () => {
-  const query = useQuery();
-  const searchTerm = query.get("q");
-  const { slug } = useParams();
-
   const [products, setProducts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+
+  const query = useQuery();
+  const searchTerm = query.get("q");
+  const { slug: categorySlug } = useParams();
+  const productLimit = categorySlug ? null : 6;
 
   // Efecto para cargar PRODUCTOS
   useEffect(() => {
@@ -28,11 +27,10 @@ const HomePage = () => {
       try {
         let productsData;
 
-        // LÓGICA CONDICIONAL DE CARGA DE PRODUCTOS
         if (searchTerm) {
           productsData = await searchProducts(searchTerm);
         } else {
-          productsData = await fetchProducts(slug);
+          productsData = await fetchProducts(categorySlug, null, productLimit);
         }
 
         setProducts(productsData || []);
@@ -48,28 +46,30 @@ const HomePage = () => {
     };
 
     loadData();
-  }, [slug, searchTerm]);
+  }, [categorySlug, searchTerm, productLimit]);
 
   // --- Lógica para títulos dinámicos ---
   let pageTitle;
   let pageSubtitle;
 
+  const currentSlug = categorySlug;
+
   if (searchTerm) {
     pageTitle = `Resultados para: "${searchTerm}"`;
     pageSubtitle = `Se encontraron ${products.length} productos.`;
-  } else if (slug) {
-    pageTitle = `Categoría: ${slug.toUpperCase().replace(/-/g, " ")}`;
+  } else if (currentSlug) {
+    pageTitle = `Categoría: ${currentSlug.toUpperCase().replace(/-/g, " ")}`;
     pageSubtitle = "Explora nuestros cortes frescos.";
   } else {
-    // Si no hay slug ni búsqueda, se muestra el título principal
-    pageTitle = "Nuestro Catálogo";
+    // Muestra el titulo Principal y subtitulo
+    pageTitle = productLimit ? "Nuestro Productos Destacados" : "Nuestro Catálogo"
     pageSubtitle = "La carne más fresca a tu mesa.";
   }
 
   const noProductsMessage = searchTerm
     ? `No se encontraron resultados para la búsqueda "${searchTerm}".`
     : `No se encontraron productos en ${
-        slug ? slug.replace(/-/g, " ") : "esta sección"
+        currentSlug ? currentSlug.replace(/-/g, " ") : "esta sección"
       }.`;
 
   // --- Renderizado Condicional ---
