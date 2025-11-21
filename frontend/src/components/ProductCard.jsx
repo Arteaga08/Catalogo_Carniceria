@@ -1,5 +1,3 @@
-// Archivo: frontend/src/components/ProductCard.jsx
-
 import React from "react";
 import { Link } from "react-router-dom";
 
@@ -8,6 +6,25 @@ const ProductCard = ({ product }) => {
   // Manejamos un placeholder si la imagen no existe
   const imageUrl =
     product.imageURL || "https://via.placeholder.com/300?text=No+Image";
+
+  const baseVariation =
+    product.variations && product.variations.length > 0
+      ? product.variations[0]
+      : null;
+
+  const basePrice = baseVariation ? baseVariation.price : null;
+  const unitReference = baseVariation ? baseVariation.unitReference : " ";
+
+  const formatedPrice =
+    basePrice !== null
+      ? new Intl.NumberFormat("es-MX", {
+          style: "currency",
+          currency: "MXN",
+        }).format(basePrice)
+      : "N/A";
+
+  const priceDisplay =
+    basePrice !== null ? `${formatedPrice} / ${unitReference}` : "Consultar";
 
   return (
     <div className="bg-white rounded-xl shadow-lg hover:shadow-xl transition-shadow duration-300 overflow-hidden">
@@ -23,7 +40,9 @@ const ProductCard = ({ product }) => {
       <div className="p-4">
         {/* Categoría (Opcional, si quieres mostrarla) */}
         <p className="text-xs text-red-600 font-semibold uppercase mb-1">
-          {product.category}
+          {product.categorySlug
+            ? product.categorySlug.replace(/-/g, " ").toUpperCase()
+            : "CARNE"}
         </p>
 
         {/* Nombre del Producto */}
@@ -38,7 +57,7 @@ const ProductCard = ({ product }) => {
 
         {/* Precio */}
         <p className="text-2xl font-extrabold text-gray-800 mb-3">
-          ${product.price ? product.price.toFixed(2) : "N/A"}
+          {priceDisplay}
         </p>
 
         {/* Botón de Agregar al Carrito (Funcionalidad Futura) */}

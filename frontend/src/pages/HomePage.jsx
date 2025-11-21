@@ -58,7 +58,7 @@ const HomePage = () => {
     pageTitle = `Resultados para: "${searchTerm}"`;
     pageSubtitle = `Se encontraron ${products.length} productos.`;
   } else if (currentSlug) {
-    pageTitle = `Categoría: ${currentSlug.toUpperCase().replace(/-/g, " ")}`;
+    pageTitle = `${currentSlug.toUpperCase().replace(/-/g, " ")}`;
     pageSubtitle = "Explora nuestros cortes frescos.";
   } else {
     // Muestra el titulo Principal y subtitulo

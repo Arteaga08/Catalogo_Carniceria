@@ -1,5 +1,3 @@
-// Archivo: frontend/src/pages/ProductDetailPage.jsx
-
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 // Asegúrate que esta importación apunte al archivo apiService.js correcto
@@ -106,12 +104,18 @@ const ProductDetailPage = () => {
 
   // Compatibilidad con el esquema de backend: algunos productos guardan la categoría
   // en `categorySlug` y el precio dentro de `variations`.
-  const displayCategory =
+  const rawCategorySlug = product.categorySlug || product.category;
+  
+  const displayCategory = rawCategorySlug ? rawCategorySlug.replace(/-/g, " ").toUpperCase() : "CATEGORÍA"
+
+  const displayPrice = product.price || (Array.isArray(product.variations) && product.variations[0]?.price) || null;
+  
+  {/*const displayCategory =
     product.category || product.categorySlug || "Categoría";
   const displayPrice =
     product.price ||
     (Array.isArray(product.variations) && product.variations[0]?.price) ||
-    null;
+    null;*/}
 
   const totalEstimado = displayPrice ? displayPrice * quantity : 0;
 

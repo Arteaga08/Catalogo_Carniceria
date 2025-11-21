@@ -3,7 +3,7 @@ import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartCotext";
 
-const WHATSAPP_NUMBER = "526181473443"; // 👈 REEMPLAZA CON TU NÚMERO DE WHATSAPP REAL
+const WHATSAPP_NUMBER = "5216181473443"; // 👈 REEMPLAZA CON TU NÚMERO DE WHATSAPP REAL
 
 const CartPage = () => {
   const { cartItems, cartTotal, removeFromCart, updateQuantity } = useCart();

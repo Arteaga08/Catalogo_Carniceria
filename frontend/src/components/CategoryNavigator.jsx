@@ -1,55 +1,53 @@
-import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { fetchCategories } from "../api/apiService";
-import SideBar from "./SideBar";
-import { useCart } from "../context/CartCotext";
-// 👈 IMPORTAR EL COMPONENTE CategoryNavigator AQUÍ
-import CategoryNavigator from "../pages/CategoryNavigator"; // Asegúrate de ajustar la ruta si no está en pages
+// Archivo: frontend/src/components/CategoryNavigator.jsx
 
-const Header = () => {
-  const [groupedCategories, setGroupedCategories] = useState({});
-  // ... (resto de estados) ...
-  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
-  const navigate = useNavigate();
+import React from "react";
+import { Link } from "react-router-dom";
 
-  // Lógica de carga de categorías
-  useEffect(() => {
-    // ... (Lógica de carga de categorías sin cambios) ...
-  }, []);
+const CategoryNavigator = ({ categories }) => {
+  const principalCategories = Object.keys(categories || {});
 
-  // ... (resto de funciones sin cambios) ...
+  if (principalCategories.length === 0) return null;
+
+  const getPrincipalCategoryImage = (principalName) => {
+    const firstSub = categories[principalName] && categories[principalName][0];
+    return firstSub ? firstSub.imageURL : null;
+  };
 
   return (
-    <>
-      {/* 1. Header principal */}
-      <header className="bg-red-700 text-white shadow-lg sticky top-0 z-50">
-        // ... (Contenido del header principal sin cambios) ...
-      </header>
+    <div className="bg-red-600 py-2 shadow-inner">
+      <div className="container mx-auto px-2">
+        <div
+          className="flex gap-2 overflow-x-auto pb-1 max-w-full -mx-2 px-2 items-center"
+          style={{ WebkitOverflowScrolling: "touch" }}
+        >
+          {principalCategories.map((principalName) => {
+            const imageUrl = getPrincipalCategoryImage(principalName);
+            const linkSlug = categories[principalName]?.[0]?.slug || "";
 
-      {/* 2. NUEVA SECCIÓN DE NAVEGACIÓN DE CATEGORÍAS (CÍRCULOS) */}
-      {/* Usamos una sección blanca para que los círculos se vean bien */}
-      <section className="bg-white shadow-md py-4 w-full sticky top-16 z-40">
-        <div className="container mx-auto px-4">
-          {/* Centrado y Deslizamiento Horizontal */}
-          {loading ? (
-            <div className="text-center text-gray-500">
-              Cargando categorías...
-            </div>
-          ) : (
-            <div className="w-full flex justify-center items-center overflow-x-auto pb-2">
-              {/* El componente CategoryNavigator espera 'categories' */}
-              <CategoryNavigator categories={groupedCategories} />
-            </div>
-          )}
+            return (
+              <Link
+                key={principalName}
+                to={`/products/category/${linkSlug}`}
+                className="flex flex-col items-center justify-start w-20 md:w-24 lg:w-28 shrink-0 p-1 rounded-md hover:bg-red-500/10 transition-colors group"
+              >
+                <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden mb-1 shadow-sm border border-transparent group-hover:border-white transition-all">
+                  <img
+                    src={imageUrl || "https://via.placeholder.com/80?text=🥩"}
+                    alt={principalName}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+
+                <span className="text-xs font-semibold text-white text-center group-hover:text-white transition-colors wrap-break-word h-6 flex items-center justify-center leading-tight">
+                  {principalName}
+                </span>
+              </Link>
+            );
+          })}
         </div>
-      </section>
-
-      {/* 3. Componente Sidebar (Menú Lateral) */}
-      <SideBar
-      // ... (props sin cambios) ...
-      />
-    </>
+      </div>
+    </div>
   );
 };
 
-export default Header;
+export default CategoryNavigator;

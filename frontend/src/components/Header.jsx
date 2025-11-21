@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { fetchCategories } from "../api/apiService";
 import SideBar from "./SideBar";
+import CategoryNavigator from "./CategoryNavigator";
 import { useCart } from "../context/CartCotext";
 
 const Header = () => {
@@ -113,7 +114,7 @@ const Header = () => {
               isSearchExpanded ? "hidden sm:block" : ""
             }`}
           >
-            🥩 Carnicería MERN
+            Carnicería Meño
           </Link>
 
           <div
@@ -217,90 +218,17 @@ const Header = () => {
         </div>
       </header>
 
-      {/* 2. NAVEGACIÓN DE CATEGORÍAS CON ANIMACIÓN SUAVE */}
-      <nav
-        className={`bg-red-800 py-3 md:py-2 shadow-inner z-50 transition-all duration-300 ${
-          // Añadimos 'animate-slide-down' cuando se activa el sticky
-          isSticky
-            ? "fixed top-0 left-0 w-full shadow-2xl animate-slide-down"
-            : "relative"
+      {/* 2. NAVEGACIÓN DE CATEGORÍAS: usar componente reutilizable */}
+      <section
+        className={`w-full transition-all duration-300 ${
+          isSticky ? "fixed top-0 left-0 w-full z-50 animate-slide-down" : "relative"
         }`}
+        aria-hidden={isSticky ? "false" : "true"}
       >
-        <div className="container mx-auto px-4">
-          <div className="flex md:flex-wrap gap-4 md:gap-2 overflow-x-auto pb-2 md:pb-0 justify-start md:justify-center scrollbar-hide">
-            {loading ? (
-              <span className="opacity-70 whitespace-nowrap text-white">
-                Cargando categorías...
-              </span>
-            ) : (
-              principalCategories.map((principalName) => (
-                <div
-                  key={principalName}
-                  className="relative group shrink-0"
-                  onMouseEnter={() => setOpenDropdown(principalName)}
-                  onMouseLeave={() => setOpenDropdown(null)}
-                >
-                  <button
-                    className="flex flex-col md:flex-row items-center justify-center md:px-3 md:py-1 md:rounded-full md:bg-red-700 md:hover:bg-red-600 transition-all text-white"
-                    onClick={() => handleDropdownToggle(principalName)}
-                  >
-                    <img
-                      src={
-                        getPrincipalCategoryImage(principalName) ||
-                        "https://via.placeholder.com/40?text=🥩"
-                      }
-                      alt={principalName}
-                      className="w-14 h-14 md:w-6 md:h-6 object-cover rounded-full border-2 border-white md:border-red-500 mb-1 md:mb-0 md:mr-2 shadow-md md:shadow-none transition-transform hover:scale-105"
-                    />
-                    <span className="text-xs md:text-sm font-semibold whitespace-nowrap">
-                      {principalName}
-                    </span>
-                    <svg
-                      className="w-4 h-4 ml-1 hidden md:block"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
-                  </button>
+        <CategoryNavigator categories={groupedCategories} />
+      </section>
 
-                  {openDropdown === principalName && (
-                    <div className="absolute left-0 mt-2 py-2 w-48 bg-white rounded-md shadow-xl z-50 hidden md:block">
-                      {groupedCategories[principalName].map((subCategory) => (
-                        <Link
-                          key={subCategory.slug}
-                          to={`/products/category/${subCategory.slug}`}
-                          onClick={handleLinkClick}
-                          className="flex items-center p-3 text-sm text-gray-700 hover:bg-red-100 hover:text-red-700 transition-colors border-b last:border-b-0"
-                        >
-                          <img
-                            src={
-                              subCategory.imageURL ||
-                              "https://via.placeholder.com/40"
-                            }
-                            alt={subCategory.name}
-                            className="w-8 h-8 object-cover rounded-full mr-3"
-                          />
-                          {subCategory.name}
-                        </Link>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-      </nav>
-
-      {/* Espacio Fantasma */}
+      {/* Espacio Fantasma (mantener separación cuando la nav esté fija) */}
       {isSticky && <div className="w-full" style={{ height: "115px" }}></div>}
 
       <SideBar
