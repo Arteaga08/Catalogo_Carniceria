@@ -7,6 +7,7 @@ import ProductPage from "./pages/ProductPage"
 import CartPage from "./pages/CartPage";
 
 import { CartProvider } from "./context/CartCotext";
+import ScrollToTop from "./components/ScrollToTop";
 // 👈 IMPORTAR el CartProvider
 
 // Asegúrate de que este archivo exista: frontend/src/context/CartContext.jsx
@@ -14,7 +15,7 @@ import { CartProvider } from "./context/CartCotext";
 const App = () => {
   return (
     <Router>
-      {/* 👈 ENVOLVER toda la lógica del enrutamiento con CartProvider */}
+      <ScrollToTop />
       <CartProvider>
         <Header />
         <main className="min-h-screen">

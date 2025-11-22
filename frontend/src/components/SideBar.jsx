@@ -4,7 +4,7 @@ import React, { useState } from "react"; // 👈 Necesita useState
 import { Link } from "react-router-dom";
 
 // El nombre de la función componente DEBE coincidir con el nombre del archivo
-const SideBar = ({ isOpen, onClose, categories, handleLinkClick }) => {
+const SideBar = ({ isOpen, onClose, categories, handleLinkClick, onSelectPrincipalCategory }) => {
   // Estado para controlar qué categoría principal está abierta (estilo acordeón)
   const [openCategory, setOpenCategory] = useState(null);
 
@@ -13,6 +13,8 @@ const SideBar = ({ isOpen, onClose, categories, handleLinkClick }) => {
   const toggleCategory = (categoryName) => {
     // Si la categoría ya está abierta, la cierra (null). Si está cerrada, la abre.
     setOpenCategory(openCategory === categoryName ? null : categoryName);
+    // Notificar al Header que se seleccionó una categoría principal
+    onSelectPrincipalCategory(categoryName);
   };
 
   return (

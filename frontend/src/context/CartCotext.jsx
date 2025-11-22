@@ -1,4 +1,5 @@
 // Archivo: frontend/src/context/CartContext.jsx
+
 import React, { createContext, useState, useContext, useEffect } from "react";
 
 // 1. Crear el Contexto
@@ -18,20 +19,17 @@ export const CartProvider = ({ children }) => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // --- Funciones de Manipulación del Carrito ---
+  // --- Funciones de Manipulación del Carrito (sin cambios) ---
 
   const addToCart = (product, quantity = 1) => {
-    // Buscar si el producto ya existe en el carrito
+    // ... (lógica de addToCart se mantiene igual) ...
     const existItem = cartItems.find((x) => x.productId === product._id);
-
-    // Obtener el precio, considerando la estructura con variaciones
     const itemPrice =
       product.price ||
       (Array.isArray(product.variations) && product.variations[0]?.price) ||
       0;
 
     if (existItem) {
-      // Si existe, actualizar solo la cantidad
       setCartItems(
         cartItems.map((x) =>
           x.productId === product._id
@@ -40,12 +38,11 @@ export const CartProvider = ({ children }) => {
         )
       );
     } else {
-      // Si no existe, añadir el nuevo producto
       const newItem = {
         productId: product._id,
         slug: product.slug,
         name: product.name,
-        price: itemPrice, // Usar el precio ya resuelto
+        price: itemPrice,
         imageURL: product.imageURL,
         quantity,
       };
@@ -65,10 +62,12 @@ export const CartProvider = ({ children }) => {
     );
   };
 
-  // Calcular el número total de artículos en el carrito
-  const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  // ⬅️ MODIFICACIÓN CLAVE AQUÍ: Contar la longitud del array
+  // OLD: const cartCount = cartItems.reduce((acc, item) => acc + item.quantity, 0);
+  // ✅ NEW: Contar el número de artículos (líneas de pedido)
+  const cartCount = cartItems.length;
 
-  // Calcular el subtotal
+  // Calcular el subtotal (se mantiene igual)
   const cartTotal = cartItems.reduce(
     (acc, item) => acc + item.price * item.quantity,
     0

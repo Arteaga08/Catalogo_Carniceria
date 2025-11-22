@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { fetchCategories } from "../api/apiService";
 import SideBar from "./SideBar";
 import CategoryNavigator from "./CategoryNavigator";
@@ -10,12 +10,23 @@ const Header = () => {
   const [loading, setLoading] = useState(true);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [selectedPrincipalFromSidebar, setSelectedPrincipalFromSidebar] = useState(null);
   const { cartCount } = useCart();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
 
   const [isSticky, setIsSticky] = useState(false);
+
+  const location = useLocation();
+  const currentPath = location.pathname;
+
+  const getActiveCategorySlug = () => {
+    const match = currentPath.match(/\/products\/([^/]+)/);
+    return match ? match[1] : null;
+  };
+
+  const activeSlug = getActiveCategorySlug();
 
   const navigate = useNavigate();
 
@@ -221,11 +232,18 @@ const Header = () => {
       {/* 2. NAVEGACIÓN DE CATEGORÍAS: usar componente reutilizable */}
       <section
         className={`w-full transition-all duration-300 ${
-          isSticky ? "fixed top-0 left-0 w-full z-50 animate-slide-down" : "relative"
+          isSticky
+            ? "fixed top-0 left-0 w-full z-50 animate-slide-down"
+            : "relative"
         }`}
         aria-hidden={isSticky ? "false" : "true"}
       >
-        <CategoryNavigator categories={groupedCategories} />
+        <CategoryNavigator
+          categories={groupedCategories}
+          activeSlug={activeSlug}
+          isSidebarOpen={isSidebarOpen}
+          selectedPrincipalFromSidebar={selectedPrincipalFromSidebar}
+        />
       </section>
 
       {/* Espacio Fantasma (mantener separación cuando la nav esté fija) */}
@@ -236,6 +254,7 @@ const Header = () => {
         onClose={() => setIsSidebarOpen(false)}
         categories={groupedCategories}
         handleLinkClick={handleLinkClick}
+        onSelectPrincipalCategory={setSelectedPrincipalFromSidebar}
       />
     </>
   );
