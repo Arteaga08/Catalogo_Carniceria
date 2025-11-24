@@ -4,13 +4,15 @@ import { fetchCategories } from "../api/apiService";
 import SideBar from "./SideBar";
 import CategoryNavigator from "./CategoryNavigator";
 import { useCart } from "../context/CartCotext";
+import ImageCarousel from "./ImageCarousel";
 
 const Header = () => {
   const [groupedCategories, setGroupedCategories] = useState({});
   const [loading, setLoading] = useState(true);
   const [openDropdown, setOpenDropdown] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [selectedPrincipalFromSidebar, setSelectedPrincipalFromSidebar] = useState(null);
+  const [selectedPrincipalFromSidebar, setSelectedPrincipalFromSidebar] =
+    useState(null);
   const { cartCount } = useCart();
 
   const [searchTerm, setSearchTerm] = useState("");
@@ -20,6 +22,8 @@ const Header = () => {
 
   const location = useLocation();
   const currentPath = location.pathname;
+
+  const isHomePage = currentPath === "/" && !location.search.includes("q=");
 
   const getActiveCategorySlug = () => {
     const match = currentPath.match(/\/products\/([^/]+)/);
@@ -33,11 +37,17 @@ const Header = () => {
   // Carga de categorías
   useEffect(() => {
     const loadCategories = async () => {
-      const data = await fetchCategories();
-      if (data) {
-        setGroupedCategories(data);
+      // Manejar el loading si es necesario, pero lo quitamos para no romper el flujo
+      try {
+        const data = await fetchCategories();
+        if (data) {
+          setGroupedCategories(data);
+        }
+      } catch (error) {
+        console.error("Error al cargar categorías:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     loadCategories();
   }, []);
@@ -46,7 +56,7 @@ const Header = () => {
   useEffect(() => {
     const handleScroll = () => {
       const offset = window.scrollY;
-      // Ajustamos el umbral un poco más alto para que la transición ocurra justo cuando desaparece el header rojo
+      // El umbral (80px) es para que se active cuando la barra roja principal desaparece
       if (offset > 80) {
         setIsSticky(true);
       } else {
@@ -60,20 +70,7 @@ const Header = () => {
     };
   }, []);
 
-  // Helpers y Handlers (sin cambios)
-  const principalCategories = Object.keys(groupedCategories);
-
-  const getPrincipalCategoryImage = (principalName) => {
-    if (groupedCategories[principalName]?.length > 0) {
-      return groupedCategories[principalName][0].imageURL;
-    }
-    return null;
-  };
-
-  const handleDropdownToggle = (categoryName) => {
-    setOpenDropdown(openDropdown === categoryName ? null : categoryName);
-  };
-
+  // Helpers y Handlers (simplificados para el contexto)
   const handleLinkClick = () => {
     setOpenDropdown(null);
     setIsSidebarOpen(false);
@@ -86,9 +83,14 @@ const Header = () => {
       setSearchTerm("");
       setIsSearchExpanded(false);
     } else {
+      // Si el usuario borra la búsqueda y presiona enter, navegamos al inicio
       navigate("/");
     }
   };
+
+  // Altura del espacio fantasma (ajustar si es necesario)
+  // Calculamos la altura de la barra de categorías para evitar saltos.
+  const phantomHeight = isSticky ? "115px" : "0";
 
   return (
     <>
@@ -104,12 +106,14 @@ const Header = () => {
             opacity: 1;
           }
         }
+        /* La animación solo aplica si está en modo sticky */
         .animate-slide-down {
           animation: slideDown 0.4s ease-out forwards;
         }
       `}</style>
 
-      {/* 1. HEADER PRINCIPAL */}
+      {/* 1. HEADER PRINCIPAL (Barra Roja) */}
+      {/* Esta barra debe ser relativa para que el carrusel se pueda colocar debajo */}
       <header className="bg-red-700 text-white shadow-lg relative z-40">
         <div className="container mx-auto px-4 py-3 flex justify-between items-center relative">
           <button
@@ -128,6 +132,7 @@ const Header = () => {
             Carnicería Meño
           </Link>
 
+          {/* Lógica de Búsqueda */}
           <div
             className={`flex items-center justify-end ${
               isSearchExpanded
@@ -152,6 +157,7 @@ const Header = () => {
                 type="submit"
                 className="bg-red-500 hover:bg-red-600 p-2 text-white rounded-r-md transition-colors"
               >
+                {/* SVG de Búsqueda */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
@@ -169,12 +175,14 @@ const Header = () => {
               </button>
             </form>
 
+            {/* Botones de expandir/colapsar búsqueda en móvil */}
             <button
               onClick={() => setIsSearchExpanded(true)}
               className={`p-2 rounded hover:bg-red-600 transition-colors md:hidden ${
                 isSearchExpanded ? "hidden" : "block"
               }`}
             >
+              {/* SVG de Lupa */}
               <svg
                 xmlns="http://www.w3.org/2000/svg"
                 className="h-6 w-6"
@@ -190,7 +198,6 @@ const Header = () => {
                 />
               </svg>
             </button>
-
             {isSearchExpanded && (
               <button
                 onClick={() => {
@@ -199,6 +206,7 @@ const Header = () => {
                 }}
                 className="p-2 rounded hover:bg-red-600 transition-colors md:hidden absolute right-4"
               >
+                {/* SVG de Cerrar */}
                 <svg
                   xmlns="http://www.w3.org/2000/svg"
                   className="h-6 w-6"
@@ -218,6 +226,7 @@ const Header = () => {
             )}
           </div>
 
+          {/* Icono de Carrito */}
           <div className={`shrink-0 ${isSearchExpanded ? "hidden" : "block"}`}>
             <Link
               to="/cart"
@@ -229,11 +238,17 @@ const Header = () => {
         </div>
       </header>
 
-      {/* 2. NAVEGACIÓN DE CATEGORÍAS: usar componente reutilizable */}
+      {isHomePage && (
+        <div className="w-full relative z-20">
+          <ImageCarousel />
+        </div>
+      )}
+
+      {/* 2. NAVEGACIÓN DE CATEGORÍAS (Se hace Sticky) */}
       <section
-        className={`w-full transition-all duration-300 ${
+        className={`w-full transition-all duration-300 z-30 ${
           isSticky
-            ? "fixed top-0 left-0 w-full z-50 animate-slide-down"
+            ? "fixed top-0 left-0 w-full z-50 animate-slide-down bg-white shadow-md" // ⬅️ Añadir background y sombra para cuando es sticky
             : "relative"
         }`}
         aria-hidden={isSticky ? "false" : "true"}
@@ -246,8 +261,14 @@ const Header = () => {
         />
       </section>
 
+      {/* ⬅️ 3. CARRUSEL DE IMÁGENES (CONDICIONAL) */}
+      {/* Se muestra solo en la página principal y no es sticky */}
+
       {/* Espacio Fantasma (mantener separación cuando la nav esté fija) */}
-      {isSticky && <div className="w-full" style={{ height: "115px" }}></div>}
+      {/* NOTA: Ajusta el valor de 'height' si la barra CategoryNavigator cambia de tamaño */}
+      {isSticky && (
+        <div className="w-full" style={{ height: phantomHeight }}></div>
+      )}
 
       <SideBar
         isOpen={isSidebarOpen}

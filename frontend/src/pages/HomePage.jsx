@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams, useLocation } from "react-router-dom";
 import { fetchProducts, searchProducts } from "../api/apiService";
 import ProductCard from "../components/ProductCard";
+// NOTA: ImageCarousel ya NO se importa aquí porque se movió a Header.jsx
 
 // Hook para obtener los parámetros de búsqueda de la URL
 const useQuery = () => {
@@ -16,7 +17,8 @@ const HomePage = () => {
   const query = useQuery();
   const searchTerm = query.get("q");
   const { slug: categorySlug } = useParams();
-  const productLimit = categorySlug ? null : 6;
+  // Limita los productos solo si estás en la página principal (/) y no buscando.
+  const productLimit = categorySlug || searchTerm ? null : 6;
 
   // Efecto para cargar PRODUCTOS
   useEffect(() => {
@@ -62,7 +64,9 @@ const HomePage = () => {
     pageSubtitle = "Explora nuestros cortes frescos.";
   } else {
     // Muestra el titulo Principal y subtitulo
-    pageTitle = productLimit ? "Nuestro Productos Destacados" : "Nuestro Catálogo"
+    pageTitle = productLimit
+      ? "Nuestros Productos Destacados"
+      : "Nuestro Catálogo";
     pageSubtitle = "La carne más fresca a tu mesa.";
   }
 
@@ -88,32 +92,36 @@ const HomePage = () => {
     );
 
   return (
-    <div className="container mx-auto px-4 py-8">
-      {/* TÍTULO DE LA PÁGINA */}
-      <div className="text-center mb-10 w-full max-w-4xl mx-auto px-4">
-        <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-2 whitespace-normal">
-          {pageTitle}
-        </h1>
-        <p className="text-xl text-gray-600 whitespace-normal">
-          {pageSubtitle}
-        </p>
-      </div>
+    <div className="min-h-screen">
+      {/* 🛑 AQUÍ YA NO ESTÁ EL CARRUSEL, SE MUESTRA DESDE EL HEADER */}
 
-      {/* LISTA DE PRODUCTOS */}
-      {products.length === 0 ? (
-        <p className="text-center text-xl text-gray-500 py-10">
-          {noProductsMessage}
-        </p>
-      ) : (
-        // CENTRADO DEL GRID DE PRODUCTOS
-        <div className="flex justify-center">
-          <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
-            {products.map((product) => (
-              <ProductCard key={product.slug} product={product} />
-            ))}
-          </div>
+      <div className="container mx-auto px-4 py-8">
+        {/* TÍTULO DE LA PÁGINA */}
+        <div className="text-center mb-10 w-full max-w-4xl mx-auto px-4">
+          <h1 className="text-4xl lg:text-5xl font-extrabold text-gray-900 mb-2 whitespace-normal">
+            {pageTitle}
+          </h1>
+          <p className="text-xl text-gray-600 whitespace-normal">
+            {pageSubtitle}
+          </p>
         </div>
-      )}
+
+        {/* LISTA DE PRODUCTOS */}
+        {products.length === 0 ? (
+          <p className="text-center text-xl text-gray-500 py-10">
+            {noProductsMessage}
+          </p>
+        ) : (
+          // CENTRADO DEL GRID DE PRODUCTOS
+          <div className="flex justify-center">
+            <div className="grid grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-6">
+              {products.map((product) => (
+                <ProductCard key={product.slug} product={product} />
+              ))}
+            </div>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
