@@ -1,9 +1,11 @@
-// Archivo: frontend/src/components/CategoryNavigator.jsx
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
-const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSidebar }) => {
+const CategoryNavigator = ({
+  categories,
+  activeSlug,
+  selectedPrincipalFromSidebar,
+}) => {
   const [selectedPrincipal, setSelectedPrincipal] = useState(null);
   const principalCategories = Object.keys(categories || {});
   const location = useLocation();
@@ -19,7 +21,6 @@ const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSideba
   // Auto-actualizar selectedPrincipal cuando activeSlug cambia
   useEffect(() => {
     if (activeSlug) {
-      // Buscar a qué categoría principal pertenece este slug
       const parentPrincipal = principalCategories.find((principal) =>
         categories[principal]?.some((subCat) => subCat.slug === activeSlug)
       );
@@ -47,7 +48,9 @@ const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSideba
     itemsToDisplay = categories[selectedPrincipal].map((subCat) => ({
       displayName: subCat.name,
       linkSlug: subCat.slug,
-      imageURL: subCat.imageURL,
+      // Guardar el dato de imagen desde cualquier campo conocido
+      imageURL:
+        subCat.imageURL || subCat.iconURL || subCat.imageUrl || subCat.image || null,
     }));
     isShowingSubcategories = true;
     currentPrincipalName = selectedPrincipal;
@@ -56,22 +59,20 @@ const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSideba
     itemsToDisplay = principalCategories.map((principalName) => {
       const firstSub =
         categories[principalName] && categories[principalName][0];
-      return {
-        displayName: principalName,
-        linkSlug: firstSub?.slug || "",
-        imageURL: firstSub.imageURL,
-        principalName: principalName,
-      };
+        return {
+          displayName: principalName,
+          linkSlug: firstSub?.slug || "",
+          // Guardar el dato de imagen desde cualquier campo conocido
+          imageURL:
+            firstSub?.imageURL || firstSub?.iconURL || firstSub?.imageUrl || firstSub?.image || null,
+          principalName: principalName,
+        };
     });
   }
 
   const handlePrincipalClick = (e, principalName) => {
     e.preventDefault();
     setSelectedPrincipal(principalName);
-  };
-
-  const handleBack = () => {
-    setSelectedPrincipal(null);
   };
 
   return (
@@ -81,7 +82,6 @@ const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSideba
           className="flex gap-2 overflow-x-auto pb-1 max-w-full -mx-2 px-2 items-center"
           style={{ WebkitOverflowScrolling: "touch" }}
         >
-          {/* Botón de Inicio si estamos mostrando subcategorías */}
           {isShowingSubcategories && (
             <Link
               to="/"
@@ -97,9 +97,14 @@ const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSideba
             </Link>
           )}
 
-          {/* Mostrar items (principales o subcategorías) */}
           {itemsToDisplay.map((item) => {
-            // Si estamos mostrando subcategorías, renderizar como Link directo
+            // Determinar src robustamente y evitar reusar un valor global
+            const imgSrc =
+              item.imageURL || item.imageUrl || item.iconURL || item.image || "/images/default_category_icon.png";
+            // DEBUG: ver qué src se está usando por item
+            // eslint-disable-next-line no-console
+            console.log("CategoryNavigator render item:", item.displayName, imgSrc);
+
             if (isShowingSubcategories) {
               return (
                 <Link
@@ -109,10 +114,8 @@ const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSideba
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden mb-1 shadow-sm border border-transparent group-hover:border-white transition-all">
                     <img
-                      src={
-                        item.imageURL ||
-                        "https://via.placeholder.com/80?text=🥩"
-                      }
+                      // Usamos la variable corregida
+                      src={imgSrc}
                       alt={item.displayName}
                       className="w-full h-full object-cover"
                     />
@@ -124,22 +127,19 @@ const CategoryNavigator = ({ categories, activeSlug, selectedPrincipalFromSideba
               );
             }
 
-            // Si estamos mostrando categorías principales, renderizar como button (clickeable)
             return (
               <button
                 key={item.principalName}
                 onClick={(e) => {
-                  handlePrincipalClick(e, item.principalName);
-                  // Navegar a la primera subcategoría de esta categoría principal
+                  handlePrincipalClick(e, item.principalName, item.linkSlug);
                   navigate(`/products/category/${item.linkSlug}`);
                 }}
                 className="flex flex-col items-center justify-start w-20 md:w-24 lg:w-28 shrink-0 p-1 rounded-md hover:bg-red-500/10 transition-colors group"
               >
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden mb-1 shadow-sm border border-transparent group-hover:border-white transition-all">
                   <img
-                    src={
-                      item.imageURL || "https://via.placeholder.com/80?text=🥩"
-                    }
+                    // Usamos la variable corregida
+                    src={imgSrc}
                     alt={item.displayName}
                     className="w-full h-full object-cover"
                   />

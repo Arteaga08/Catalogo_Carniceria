@@ -13,31 +13,31 @@ import "swiper/css/pagination";
 const carouselImages = [
   {
     id: 1,
-    src: "https://via.placeholder.com/1200x400/8B0000/FFFFFF?text=OFERTA+DE+ARRRRACHERA",
+    src: "/images/Carniceria/CarneRes/New-york.png",
     alt: "Oferta Semanal",
     link: "/products/arrachera",
   },
   {
     id: 2,
-    src: "https://via.placeholder.com/1200x400/DC143C/FFFFFF?text=CORTES+FINOS+PARA+PARRILLADA",
+    src: "/images/Carniceria/CarneRes/Tomahawk.png",
     alt: "Cortes Premium",
     link: "/category/cortes-premium",
   },
   {
     id: 3,
-    src: "https://via.placeholder.com/1200x400/A52A2A/FFFFFF?text=CARNE+MOLIDA+FRESCA+DIARIA",
+    src: "/images/Carniceria/CarneRes/Cowboy.png",
     alt: "Carne Molida",
     link: "/products/carne-molida",
   },
   {
     id: 4,
-    src: "https://via.placeholder.com/1200x400/B22222/FFFFFF?text=PROMOCION+PAQUETES+FAMILIARES",
+    src: "/images/Carniceria/CarneRes/Porter-house.png",
     alt: "Paquetes Familiares",
     link: "/category/paquetes",
   },
   {
     id: 5,
-    src: "https://via.placeholder.com/1200x400/CD5C5C/FFFFFF?text=POLLO+Y+CERDO+FRESCURA+GARANTIZADA",
+    src: "/images/Carniceria/CarneRes/milanesa-res.png",
     alt: "Pollo y Cerdo",
     link: "/category/pollo",
   },
@@ -54,7 +54,7 @@ const ImageCarousel = () => {
         loop={true}
         // CONFIGURACIÓN DEL AUTO-PLAY
         autoplay={{
-          delay: 5000,
+          delay: 3000,
           disableOnInteraction: false,
         }}
         // Configuraciones de UI

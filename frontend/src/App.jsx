@@ -23,7 +23,7 @@ const App = () => {
             {/* Rutas existentes */}
             <Route path="/" element={<HomePage />} />
             <Route path="/products/category/:slug" element={<HomePage />} />
-            <Route path="/product/:slug" element={<ProductPage />} />
+            <Route path="/products/:slug" element={<ProductPage />} />
             <Route path="/cart" element={<CartPage />} />
 
             {/* Futuras rutas del carrito (por ejemplo, /cart) */}
