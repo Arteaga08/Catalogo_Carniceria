@@ -16,6 +16,17 @@ const categorySchema = mongoose.Schema(
             type: String,
             required: true,
         },
+        // soportar campos de imagen con nombres claros
+        iconURL: {
+            type: String,
+            required: false,
+            default: "/images/default_category.png",
+        },
+        imageURL: {
+            type: String,
+            required: false,
+            default: null,
+        },
         order: {
             type: Number,
             default: 99,

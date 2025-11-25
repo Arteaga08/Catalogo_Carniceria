@@ -13,75 +13,92 @@ const MONGODB_URI = process.env.MONGO_URI;
 connectDB();
 
 // --- DATOS DE PRUEBA (DATA) ---
-const categories = [
-  {
-    name: "Carne de Res",
-    slug: "carne-de-res",
-    categoryPrincipal: "CARNICERÍA",
-    order: 1,
-  },
-  {
-    name: "Carne de Puerco",
-    slug: "carne-de-puerco",
-    categoryPrincipal: "CARNICERÍA",
-    order: 2,
-  },
-  { name: "Pollo", slug: "pollo", categoryPrincipal: "CARNICERÍA", order: 3 },
-  {
-    name: "Procesado",
-    slug: "procesado",
-    categoryPrincipal: "CARNICERÍA",
-    order: 4,
-  },
-  {
-    name: "Cortes para Asar",
-    slug: "cortes-para-asar",
-    categoryPrincipal: "CORTES PARRILLEROS",
-    order: 1,
-  },
-  {
-    name: "Cortes Premium",
-    slug: "cortes-premium",
-    categoryPrincipal: "CORTES PARRILLEROS",
-    order: 2,
-  },
-  {
-    name: "Paquetes para Asar",
-    slug: "paquetes-para-asar",
-    categoryPrincipal: "PAQUETES",
-    order: 1,
-  },
-  {
-    name: "Paquetes para Discada",
-    slug: "paquetes-para-discada",
-    categoryPrincipal: "PAQUETES",
-    order: 2,
-  },
-  {
-    name: "Carnitas Tradicionales",
-    slug: "carnitas-tradicionales",
-    categoryPrincipal: "CARNITAS",
-    order: 1,
-  },
-  {
-    name: "Chicharrones",
-    slug: "chicharrones",
-    categoryPrincipal: "CARNITAS",
-    order: 2,
-  },
-  {
-    name: "Hamburguesas",
-    slug: "hamburguesas",
-    categoryPrincipal: "CONGELADO",
-    order: 1,
-  },
-  {
-    name: "Nuggets",
-    slug: "nuggets",
-    categoryPrincipal: "CONGELADO",
-    order: 2,
-  },
-];
+// Archivo: frontend/src/data/mockCategoriesGrouped.js (Ejemplo)
+
+const categories = {
+  CARNICERÍA: [
+    {
+      name: "Carne de Res",
+      slug: "carne-de-res",
+      iconURL: "/images/Carniceria/CarneRes/New-york.png",
+      order: 1,
+    },
+    {
+      name: "Carne de Puerco",
+      slug: "carne-de-puerco",
+      iconURL: "/images/Carniceria/CarneCerdo/chuleta-cerdo-ahumada.png",
+      order: 2,
+    },
+    {
+      name: "Pollo",
+      slug: "pollo",
+      iconURL: "/images/Carniceria/Pollo/pollo-pechuga.png",
+      order: 3,
+    },
+    {
+      name: "Procesado",
+      slug: "procesado",
+      iconURL: "/images/Congelado/Carne-para-hamburguesa-Burgy.jpg",
+      order: 4,
+    },
+  ],
+  "CORTES PARRILLEROS": [
+    {
+      name: "Cortes para Asar",
+      slug: "cortes-para-asar",
+      iconURL: "/images/Carniceria/CarneRes/Tomahawk.png",
+      order: 1,
+    },
+    {
+      name: "Cortes Premium",
+      slug: "cortes-premium",
+      iconURL: "/images/Parrilleros/cortes-premium.png",
+      order: 2,
+    },
+  ],
+  PAQUETES: [
+    {
+      name: "Paquetes para Asar",
+      slug: "paquetes-para-asar",
+      iconURL: "/images/Carniceria/CarneRes/Cowboy.png",
+      order: 1,
+    },
+    {
+      name: "Paquetes para Discada",
+      slug: "paquetes-para-discada",
+      iconURL: "/images/Paquetes/paquete-discada.png",
+      order: 2,
+    },
+  ],
+  CARNITAS: [
+    {
+      name: "Carnitas Tradicionales",
+      slug: "carnitas-tradicionales",
+      iconURL: "/images/Carniceria/CarneCerdo/cerdo-costilla.png",
+      order: 1,
+    },
+    {
+      name: "Chicharrones",
+      slug: "chicharrones",
+      iconURL: "/images/Carnitas/chicharron.png",
+      order: 2,
+    },
+  ],
+  CONGELADO: [
+    {
+      name: "Hamburguesas",
+      slug: "hamburguesas",
+      iconURL: "/images/Congelado/Carne-para-hamburguesa-Burgy.jpg",
+      order: 1,
+    },
+    {
+      name: "Nuggets",
+      slug: "nuggets",
+      iconURL: "/images/Congelado/nuggets.png",
+      order: 2,
+    },
+  ],
+};
 
 const products = [
   // ----------------------------------------------------------------------
@@ -92,7 +109,7 @@ const products = [
     slug: "bistec-de-res-selecto",
     description:
       "Corte delgado y magro, ideal para asar o freír. Frescura garantizada. El corte de Res más popular.",
-    imageURL: "/images/bistec-res.jpg",
+    imageURL: "/images/Carniceria/CarneRes/bisteck0.png",
     categorySlug: "carne-de-res",
     variations: [
       {
@@ -115,7 +132,7 @@ const products = [
     slug: "carne-molida-premium",
     description:
       "Carne fresca y molida con la mezcla ideal de grasa para hamburguesas jugosas y albóndigas.",
-    imageURL: "/images/molida-res.jpg",
+    imageURL: "/images/Carniceria/CarneRes/molida-especial.png",
     categorySlug: "carne-de-res",
     variations: [
       {
@@ -132,7 +149,7 @@ const products = [
     slug: "diezmillo-para-guisar",
     description:
       "Corte de res económico y sabroso, ideal para guisos lentos, caldos o estofados.",
-    imageURL: "/images/diezmillo.jpg",
+    imageURL: "/images/Carniceria/CarneRes/diezmillo-marinado.png",
     categorySlug: "carne-de-res",
     variations: [
       {
@@ -145,11 +162,11 @@ const products = [
     isAvailable: true,
   },
   {
-    name: "Hígado de Res Fresco",
-    slug: "higado-de-res-fresco",
+    name: "Milanesa de Res",
+    slug: "milanesa-de-res",
     description:
-      "Fuente rica en nutrientes y hierro, rebanado delgado y listo para cocinar.",
-    imageURL: "/images/higado-res.jpg",
+      "Corte de res económico y sabroso, ideal para guisos lentos, caldos o empanizar.",
+    imageURL: "/images/Carniceria/CarneRes/milanesa-res.png",
     categorySlug: "carne-de-res",
     variations: [
       {
@@ -170,7 +187,7 @@ const products = [
     slug: "chuleta-puerco-ahumada",
     description:
       "Chuletas gruesas de puerco con un delicioso sabor ahumado. Perfectas para sartén.",
-    imageURL: "/images/chuleta-puerco.jpg",
+    imageURL: "/images/Carniceria/CarneCerdo/chuleta-cerdo-ahumada.png",
     categorySlug: "carne-de-puerco",
     variations: [
       {
@@ -187,7 +204,7 @@ const products = [
     slug: "costilla-st-louis",
     description:
       "Rack de costillas cortadas estilo St. Louis, perfectas para la barbacoa.",
-    imageURL: "/images/costilla-st-louis.jpg",
+    imageURL: "/images/Carniceria/CarneCerdo/cerdo-costilla.png",
     categorySlug: "carne-de-puerco",
     variations: [
       {
@@ -204,7 +221,7 @@ const products = [
     slug: "espaldilla-puerco",
     description:
       "Corte magro de cerdo ideal para preparar chicharrón prensado o carne deshebrada.",
-    imageURL: "/images/espaldilla-puerco.jpg",
+    imageURL: "/images/Carniceria/CarneCerdo/espaldilla-cerdo.png",
     categorySlug: "carne-de-puerco",
     variations: [
       {
@@ -217,11 +234,11 @@ const products = [
     isAvailable: true,
   },
   {
-    name: "Lomo de Cerdo Entero",
-    slug: "lomo-de-cerdo-entero",
+    name: "Molida de Cerdo",
+    slug: "molida-de-cerdo",
     description:
       "Lomo de cerdo fresco, sin hueso. Ideal para asar al horno o rellenar.",
-    imageURL: "/images/lomo-puerco.jpg",
+    imageURL: "/images/Carniceria/CarneCerdo/molida-cerdo.png",
     categorySlug: "carne-de-puerco",
     variations: [
       {
@@ -242,7 +259,7 @@ const products = [
     slug: "pechuga-pollo-sin-hueso",
     description:
       "Pechugas de pollo frescas, sin hueso ni piel, listas para filetear.",
-    imageURL: "/images/pechuga-pollo.jpg",
+    imageURL: "/images/Carniceria/Pollo/pollo-pechuga.png",
     categorySlug: "pollo",
     variations: [
       {
@@ -259,7 +276,7 @@ const products = [
     slug: "muslo-y-pierna-hueso",
     description:
       "Paquete mixto de muslo y pierna, jugosos, ideales para caldos.",
-    imageURL: "/images/muslo-pierna.jpg",
+    imageURL: "/images/Carniceria/Pollo/pollo-pierna-muslo.png",
     categorySlug: "pollo",
     variations: [
       {
@@ -275,7 +292,7 @@ const products = [
     name: "Alas de Pollo Enteras",
     slug: "alas-de-pollo-enteras",
     description: "Alas frescas, perfectas para marinadas caseras o freír.",
-    imageURL: "/images/alas-pollo.jpg",
+    imageURL: "/images/Carniceria/Pollo/pollo-alitas.png",
     categorySlug: "pollo",
     variations: [
       {
@@ -292,7 +309,7 @@ const products = [
     slug: "milanesa-pollo",
     description:
       "Filetes delgados de pechuga listos para empanizar. Fáciles y rápidos.",
-    imageURL: "/images/milanesa-pollo.jpg",
+    imageURL: "/images/Carniceria/Pollo/milanesa-pollo.png",
     categorySlug: "pollo",
     variations: [
       {
@@ -973,10 +990,27 @@ async function seedDB() {
     await Product.deleteMany();
     console.log("🗑️ Colecciones limpiadas (Categories y Products).");
 
-    // 2. Insertar los nuevos datos
-    await Category.insertMany(categories);
-    await Product.insertMany(products);
+    // 2. Construir array plano de categorías a insertar a partir del objeto agrupado
+    const categoriesToInsert = [];
 
+    for (const principal in categories) {
+      if (categories.hasOwnProperty(principal)) {
+        categories[principal].forEach((subCat) => {
+          categoriesToInsert.push({
+            name: subCat.name,
+            slug: subCat.slug,
+            // Normalizar el nombre del campo de imagen (iconURL -> imageURL)
+            imageURL: subCat.iconURL || subCat.imageURL || subCat.image || null,
+            order: subCat.order || 0,
+            categoryPrincipal: principal,
+          });
+        });
+      }
+    }
+
+    // Insertar categorías y productos (una sola vez cada colección)
+    await Category.insertMany(categoriesToInsert);
+    await Product.insertMany(products);
     console.log("✨ Datos de prueba importados con éxito.");
   } catch (error) {
     console.error("❌ Error en la inserción de datos:", error.message);
@@ -986,3 +1020,5 @@ async function seedDB() {
 }
 
 seedDB();
+
+export default categories;
