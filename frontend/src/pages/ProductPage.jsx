@@ -63,7 +63,21 @@ const ProductDetailPage = () => {
       alert("Por favor, selecciona una cantidad válida (mínimo 0.5 Kg).");
       return;
     }
-    addToCart(product, quantity);
+    // Determinar la variación que representará este producto al añadirse al carrito.
+    // Si el producto tiene variaciones, usamos la primera. Si no, creamos
+    // una variación temporal basada en el precio del producto.
+    let variation = null;
+    if (Array.isArray(product.variations) && product.variations.length > 0) {
+      variation = product.variations[0];
+    } else {
+      variation = {
+        _id: product._id,
+        price: product.price || 0,
+        unitLabel: product.unitLabel || "Kg",
+      };
+    }
+
+    addToCart(product, variation, quantity);
     // Aquí se integraría con el contexto/carrito: addToCart(product, quantity)
     alert(
       `¡Listo para agregar ${quantity.toFixed(1)} Kg de ${
@@ -220,7 +234,7 @@ const ProductDetailPage = () => {
 
             {/* Botón de Añadir al Carrito */}
             <button
-              className="w-full md:w-auto bg-red-700 text-white text-xl py-3 px-8 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg disabled:bg-gray-400"
+              className="cursor-pointer w-full md:w-auto bg-red-700 text-white text-xl py-3 px-8 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg disabled:bg-gray-400"
               onClick={handleAddToCart}
               disabled={displayPrice === null || quantity < 0.5}
             >

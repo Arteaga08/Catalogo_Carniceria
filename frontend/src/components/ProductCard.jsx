@@ -80,7 +80,7 @@ const ProductCard = ({ product }) => {
       <div className="p-4 pt-0">
         <button
           onClick={handleAddToCart}
-          className="w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200 flex items-center justify-center"
+          className="cursor-pointer w-full bg-red-600 text-white py-2 rounded-lg font-semibold hover:bg-red-700 transition-colors duration-200 flex items-center justify-center"
         >
           <span className="text-xl mr-2">🛒</span>
           Añadir

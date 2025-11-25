@@ -110,7 +110,7 @@ const CategoryNavigator = ({
                 <Link
                   key={item.linkSlug}
                   to={`/products/category/${item.linkSlug}`}
-                  className="flex flex-col items-center justify-start w-20 md:w-24 lg:w-28 shrink-0 p-1 rounded-md hover:bg-red-500/10 transition-colors group"
+                  className="cursor-pointer flex flex-col items-center justify-start w-20 md:w-24 lg:w-28 shrink-0 p-1 rounded-md hover:bg-red-500/10 transition-colors group"
                 >
                   <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden mb-1 shadow-sm border border-transparent group-hover:border-white transition-all">
                     <img
@@ -134,7 +134,7 @@ const CategoryNavigator = ({
                   handlePrincipalClick(e, item.principalName, item.linkSlug);
                   navigate(`/products/category/${item.linkSlug}`);
                 }}
-                className="flex flex-col items-center justify-start w-20 md:w-24 lg:w-28 shrink-0 p-1 rounded-md hover:bg-red-500/10 transition-colors group"
+                className=" cursor-pointer flex flex-col items-center justify-start w-20 md:w-24 lg:w-28 shrink-0 p-1 rounded-md hover:bg-red-500/10 transition-colors group"
               >
                 <div className="w-10 h-10 md:w-12 md:h-12 bg-white rounded-full overflow-hidden mb-1 shadow-sm border border-transparent group-hover:border-white transition-all">
                   <img

@@ -18,16 +18,11 @@ export const CartProvider = ({ children }) => {
 
   // --- Funciones de Manipulación del Carrito ---
 
-  // Ahora recibe el objeto de la variación para manejar diferentes presentaciones
   const addToCart = (product, variation, quantity = 1) => {
-    // Generar un ID ÚNICO para la línea del carrito (combinando producto y variación)
-    // Asumimos que la variación tiene un _id o usamos el unitLabel como fallback para productos simples
     const lineItemId = `${product._id}-${variation._id || variation.unitLabel}`;
 
-    // Buscar si la LÍNEA específica (producto + variación) ya existe en el carrito
     const existItem = cartItems.find((x) => x.lineItemId === lineItemId);
 
-    // Obtener datos de la variación
     const itemPrice = variation.price || 0;
     const itemUnitLabel = variation.unitLabel || "Unidad";
     const itemUnitReference = variation.unitReference || "";
@@ -37,7 +32,10 @@ export const CartProvider = ({ children }) => {
       setCartItems(
         cartItems.map((x) =>
           x.lineItemId === lineItemId
-            ? { ...existItem, quantity: existItem.quantity + quantity }
+            ? {
+                ...existItem,
+                quantity: Number(existItem.quantity) + Number(quantity),
+              } // Aseguramos que la suma es numérica
             : x
         )
       );
@@ -52,22 +50,23 @@ export const CartProvider = ({ children }) => {
         unitLabel: itemUnitLabel,
         unitReference: itemUnitReference,
         imageURL: product.imageURL,
-        quantity,
+        quantity: quantity, // Usamos la cantidad inicial
       };
       setCartItems([...cartItems, newItem]);
     }
   };
 
   const removeFromCart = (lineItemId) => {
-    // Ahora usa lineItemId
     setCartItems(cartItems.filter((x) => x.lineItemId !== lineItemId));
   };
 
   const updateQuantity = (lineItemId, newQuantity) => {
-    // Ahora usa lineItemId
+    // Aseguramos que newQuantity se almacene como número (aunque parseFloat se use en el componente)
     setCartItems(
       cartItems.map((x) =>
-        x.lineItemId === lineItemId ? { ...x, quantity: newQuantity } : x
+        x.lineItemId === lineItemId
+          ? { ...x, quantity: Number(newQuantity) }
+          : x
       )
     );
   };
@@ -75,10 +74,15 @@ export const CartProvider = ({ children }) => {
   // ✅ Calcular el número total de productos únicos (líneas de pedido)
   const cartCount = cartItems.length;
 
-  // Calcular el subtotal (se mantiene igual)
+  // ⬅️ ¡CORRECCIÓN APLICADA AQUÍ!
+  // Usar Number() en price y quantity para asegurar la suma correcta incluso al cargar de localStorage.
   const cartTotal = cartItems.reduce(
-    (acc, item) => acc + item.price * item.quantity,
-    0
+    (acc, item) => {
+      const price = Number(item.price);
+      const quantity = Number(item.quantity);
+      return acc + price * quantity;
+    },
+    0 // Inicializar el acumulador a 0
   );
 
   return (
