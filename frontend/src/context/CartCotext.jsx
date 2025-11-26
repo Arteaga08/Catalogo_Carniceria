@@ -24,9 +24,16 @@ export const CartProvider = ({ children }) => {
     const existItem = cartItems.find((x) => x.lineItemId === lineItemId);
 
     const itemPrice = variation.price || 0;
-    const itemUnitLabel = variation.unitLabel || "Unidad";
-    const itemUnitReference = variation.unitReference || "";
+    // Fallbacks: variation.unitLabel <- variation.unitName <- product.unitName
+    const itemUnitLabel =
+      variation.unitLabel || variation.unitName || product.unitName || "Unidad";
+    const itemUnitReference = variation.unitReference || variation.unitReference || "";
 
+    const computedIsInteger =
+        typeof variation.isIntegerUnit === "boolean"
+          ? variation.isIntegerUnit
+          : false; //
+    
     if (existItem) {
       // Si existe, actualizar solo la cantidad de esa LÍNEA
       setCartItems(
@@ -41,6 +48,12 @@ export const CartProvider = ({ children }) => {
       );
     } else {
       // Si no existe, añadir la nueva línea de producto/variación
+
+      // 🚨 CORRECCIÓN APLICADA: Garantizar que la bandera de la VARIACIÓN tenga prioridad.
+      // 1. Si variation.isIntegerUnit es un booleano (true o false), se usa.
+      // 2. Si no, usamos el valor del producto (que ya sabemos que es false si el producto es Tocino Ahumado).
+      // NOTA: Es esencial que variation.isIntegerUnit esté llegando desde ProductDetailPage.jsx
+
       const newItem = {
         lineItemId: lineItemId, // ID ÚNICO
         productId: product._id,
@@ -49,6 +62,7 @@ export const CartProvider = ({ children }) => {
         price: itemPrice,
         unitLabel: itemUnitLabel,
         unitReference: itemUnitReference,
+        isIntegerUnit: computedIsInteger, // ⬅️ Usamos el valor extraído
         imageURL: product.imageURL,
         quantity: quantity, // Usamos la cantidad inicial
       };
@@ -74,7 +88,6 @@ export const CartProvider = ({ children }) => {
   // ✅ Calcular el número total de productos únicos (líneas de pedido)
   const cartCount = cartItems.length;
 
-  // ⬅️ ¡CORRECCIÓN APLICADA AQUÍ!
   // Usar Number() en price y quantity para asegurar la suma correcta incluso al cargar de localStorage.
   const cartTotal = cartItems.reduce(
     (acc, item) => {

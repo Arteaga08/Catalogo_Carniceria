@@ -13,7 +13,7 @@ import "swiper/css/pagination";
 const carouselImages = [
   {
     id: 1,
-    src: "/images/Carniceria/CarneRes/New-york.png",
+    src: "/images/Carrusel/homepage.png",
     alt: "Oferta Semanal",
     link: "/products/arrachera",
   },

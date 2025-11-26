@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-// Asegúrate que esta importación apunte al archivo apiService.js correcto
 import { fetchProductBySlug } from "../api/apiService";
 import { useCart } from "../context/CartCotext";
 
@@ -9,14 +8,13 @@ const ProductDetailPage = () => {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // Estado para manejar la cantidad seleccionada (por defecto 1.0 Kg)
-  const [quantity, setQuantity] = useState(1.0);
-  // estado intermedio para permitir que el usuario escriba libremente
-  const [quantityInput, setQuantityInput] = useState(quantity.toFixed(1));
-
-  // 1. Obtenemos el slug de la URL
   const { slug } = useParams();
   const { addToCart } = useCart();
+
+  // Estado para manejar la cantidad seleccionada. Se inicializa a 1 por defecto.
+  const [quantity, setQuantity] = useState(1);
+  // Estado intermedio para el input (texto).
+  const [quantityInput, setQuantityInput] = useState("1.0");
 
   useEffect(() => {
     const loadProduct = async () => {
@@ -30,13 +28,16 @@ const ProductDetailPage = () => {
       setError(null);
 
       try {
-        // 2. Llamada a la API
         const data = await fetchProductBySlug(slug);
 
         if (data && data.name) {
-          // Verificamos que los datos sean válidos (ej: tiene nombre)
           setProduct(data);
           console.log("Producto cargado con éxito:", data.name);
+
+          // ✅ CORRECCIÓN: Establecer la cantidad inicial a 1.
+          // 1.0 es válido tanto para unidades enteras como fraccionables (cuyo min es 0.5).
+          setQuantity(1);
+          // (quantityInput se actualizará por el siguiente useEffect)
         } else {
           setError("El producto no existe o la respuesta fue vacía.");
         }
@@ -44,45 +45,135 @@ const ProductDetailPage = () => {
         console.error("Fallo al cargar el producto:", err);
         setError("Error de red o del servidor al obtener el producto.");
       } finally {
-        // 3. Importante: Aseguramos que el estado de carga siempre termine
         setLoading(false);
       }
     };
 
     loadProduct();
-    // Dependencia del efecto en el slug
   }, [slug]);
 
-  // Mantener sincronizado el input cuando cambie la cantidad programáticamente
+  // --- Lógica para obtener la unidad y el precio ---
+  const productUnitLabel =
+    Array.isArray(product?.variations) && product.variations.length > 0
+      ? product.variations[0].unitName ||
+        product.variations[0].unitLabel ||
+        "Kg"
+      : product?.unitName || "Kg";
+
+  const displayPrice =
+    product?.price ||
+    (Array.isArray(product?.variations) && product.variations[0]?.price) ||
+    null;
+  // --- Fin Lógica ---
+
+  // 🚩 ZONA DE CÁLCULO DE UNIDADES (CORREGIDA LA UBICACIÓN EN MENSAJE ANTERIOR)
+  // Determinar si la unidad debe tratarse como entera o fraccionable.
+  const isInteger = (() => {
+    // 1) Si la variación trae explícitamente isIntegerUnit, respetarla
+    if (Array.isArray(product?.variations) && product.variations.length > 0) {
+      const v = product.variations[0];
+      // Usamos ?. para acceso seguro
+      if (typeof v?.isIntegerUnit === "boolean") return v.isIntegerUnit;
+    }
+
+    // 2) Si el producto trae isIntegerUnit, respetarlo
+    if (typeof product?.isIntegerUnit === "boolean")
+      return product.isIntegerUnit;
+
+    // 3) Detección por texto en unitName/unitLabel
+    const unit = (
+      (product?.variations && product.variations[0]?.unitName) ||
+      (product?.variations && product.variations[0]?.unitName) ||
+      product?.unitName ||
+      ""
+    )
+      .toString()
+      .toLowerCase();
+
+    const integerUnitPatterns = [
+      "unidad",
+      "unidades",
+      "pieza",
+      "piezas",
+      "pack",
+      "paquete",
+      "paquetes",
+      "bolsa",
+      "bolsas",
+      "huevo",
+      "huevos",
+      "paq",
+      "pza",
+    ];
+
+    return integerUnitPatterns.some((w) => unit.includes(w));
+  })();
+
+  const stepVal = isInteger ? 1 : 0.5;
+  const minVal = isInteger ? 1 : 0.5;
+  const decimals = isInteger ? 0 : 1;
+  // ----------------------------------------------------------------------------------
+
+  // Sincronizar el input textual con la cantidad cuando cambien quantity o decimals
   useEffect(() => {
-    setQuantityInput(quantity.toFixed(1));
-  }, [quantity]);
+    // Usamos Number(quantity) para asegurar que el toFixed funcione
+    setQuantityInput(Number(quantity).toFixed(decimals));
+  }, [quantity, decimals]);
 
   const handleAddToCart = () => {
-    if (!product || quantity < 0.5) {
-      alert("Por favor, selecciona una cantidad válida (mínimo 0.5 Kg).");
+    // ⬅️ CONSOLE LOG PARA DEBUG:
+    console.log("--- DEBUG CARGA CARRITO ---");
+    console.log("Producto isIntegerUnit (Backend):", product.isIntegerUnit);
+    console.log("Lógica Evaluada (isInteger):", isInteger);
+    console.log("Cantidad enviada:", quantity);
+    console.log("---------------------------");
+    console.log("DEBUG DETALLE: Objeto Producto a Agregar", product);
+
+    // Usamos productUnitLabel para el mensaje de alerta
+    if (!product || quantity < minVal) {
+      // ⚠️ Usamos una alerta temporal, idealmente se usaría un modal
+      alert(
+        `Por favor, selecciona una cantidad válida (mínimo ${minVal} ${productUnitLabel}).`
+      );
       return;
     }
-    // Determinar la variación que representará este producto al añadirse al carrito.
-    // Si el producto tiene variaciones, usamos la primera. Si no, creamos
-    // una variación temporal basada en el precio del producto.
+
     let variation = null;
+    let finalPrice = displayPrice || 0;
+    let finalUnitLabel = productUnitLabel;
+
     if (Array.isArray(product.variations) && product.variations.length > 0) {
-      variation = product.variations[0];
+      const backendVariation = product.variations[0];
+      finalPrice = backendVariation.price || finalPrice;
+      finalUnitLabel =
+        backendVariation.unitName ||
+        backendVariation.unitLabel ||
+        finalUnitLabel;
+
+      variation = {
+        ...backendVariation,
+        unitLabel: finalUnitLabel,
+        // preservar o inferir si la variación debe ser entera
+        isIntegerUnit:
+          typeof backendVariation.isIntegerUnit === "boolean"
+            ? backendVariation.isIntegerUnit
+            : isInteger,
+      };
     } else {
       variation = {
         _id: product._id,
-        price: product.price || 0,
-        unitLabel: product.unitLabel || "Kg",
+        price: finalPrice,
+        unitLabel: finalUnitLabel,
+        isIntegerUnit: isInteger,
       };
     }
 
     addToCart(product, variation, quantity);
-    // Aquí se integraría con el contexto/carrito: addToCart(product, quantity)
+    // ⚠️ Usamos una alerta temporal, idealmente se usaría un modal
     alert(
-      `¡Listo para agregar ${quantity.toFixed(1)} Kg de ${
-        product.name
-      } al carrito!`
+      `¡Listo para agregar ${quantity.toFixed(
+        decimals
+      )} ${productUnitLabel} de ${product.name} al carrito!`
     );
   };
 
@@ -112,24 +203,16 @@ const ProductDetailPage = () => {
   }
 
   // --- Renderizado del Detalle del Producto (si product existe) ---
+
   const imageUrl =
     product.imageURL ||
     "https://via.placeholder.com/600x400?text=Imagen+No+Disponible";
 
-  // Compatibilidad con el esquema de backend: algunos productos guardan la categoría
-  // en `categorySlug` y el precio dentro de `variations`.
   const rawCategorySlug = product.categorySlug || product.category;
-  
-  const displayCategory = rawCategorySlug ? rawCategorySlug.replace(/-/g, " ").toUpperCase() : "CATEGORÍA"
 
-  const displayPrice = product.price || (Array.isArray(product.variations) && product.variations[0]?.price) || null;
-  
-  {/*const displayCategory =
-    product.category || product.categorySlug || "Categoría";
-  const displayPrice =
-    product.price ||
-    (Array.isArray(product.variations) && product.variations[0]?.price) ||
-    null;*/}
+  const displayCategory = rawCategorySlug
+    ? rawCategorySlug.replace(/-/g, " ").toUpperCase()
+    : "CATEGORÍA";
 
   const totalEstimado = displayPrice ? displayPrice * quantity : 0;
 
@@ -158,22 +241,29 @@ const ProductDetailPage = () => {
             <p className="text-3xl font-black text-gray-800 mb-2">
               Precio:{" "}
               {displayPrice ? `$${Number(displayPrice).toFixed(2)}` : "N/A"}
-              <span className="text-base font-normal text-gray-500"> / Kg</span>
+              <span className="text-base font-normal text-gray-500">
+                {" "}
+                / {productUnitLabel}
+              </span>
             </p>
 
             <hr className="my-6" />
 
-            {/* Selector de Cantidad (Kg) */}
+            {/* Selector de Cantidad (Usando la lógica dinámica) */}
             <h3 className="text-xl font-bold text-gray-800 mb-3">
               Seleccionar Cantidad
             </h3>
             <div className="flex items-center space-x-4 mb-4">
+              {/* ⬅️ CONTROLES DINÁMICOS BASADOS EN isInteger */}
               <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
                 <button
                   type="button"
                   aria-label="Disminuir cantidad"
                   onClick={() => {
-                    const next = Math.max(0.5, +(quantity - 0.5).toFixed(1));
+                    const next = Math.max(
+                      minVal,
+                      +(quantity - stepVal).toFixed(decimals)
+                    );
                     setQuantity(next);
                   }}
                   className="px-3 py-2 bg-gray-100 hover:bg-gray-200"
@@ -182,24 +272,32 @@ const ProductDetailPage = () => {
                 </button>
                 <input
                   type="number"
-                  inputMode="decimal"
-                  pattern="[0-9]*([.,][0-9]+)?"
+                  inputMode={isInteger ? "numeric" : "decimal"}
+                  pattern={isInteger ? "[0-9]*" : "[0-9]*([.,][0-9]+)?"}
                   value={quantityInput}
                   onChange={(e) => {
-                    // permitimos que el usuario escriba libremente
                     setQuantityInput(e.target.value);
                   }}
                   onBlur={(e) => {
                     const raw = e.target.value.replace(",", ".");
                     const parsed = parseFloat(raw);
-                    const next = isNaN(parsed) ? 1.0 : Math.max(0.5, parsed);
+                    let next;
+                    if (isNaN(parsed)) {
+                      next = minVal;
+                    } else {
+                      if (isInteger) {
+                        next = Math.max(minVal, Math.round(parsed));
+                      } else {
+                        next = Math.max(minVal, +parsed.toFixed(decimals));
+                      }
+                    }
                     setQuantity(next);
                   }}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") e.currentTarget.blur();
                   }}
-                  min="0.5"
-                  step="0.5"
+                  min={minVal}
+                  step={stepVal}
                   className="w-28 text-center p-3 text-xl font-semibold focus:border-red-500 focus:outline-none"
                   disabled={displayPrice === null}
                 />
@@ -207,7 +305,7 @@ const ProductDetailPage = () => {
                   type="button"
                   aria-label="Aumentar cantidad"
                   onClick={() => {
-                    const next = +(quantity + 0.5).toFixed(1);
+                    const next = +(quantity + stepVal).toFixed(decimals);
                     setQuantity(next);
                   }}
                   className="px-3 py-2 bg-gray-100 hover:bg-gray-200"
@@ -215,7 +313,9 @@ const ProductDetailPage = () => {
                   +
                 </button>
               </div>
-              <span className="text-xl text-gray-700 font-semibold">Kg</span>
+              <span className="text-xl text-gray-700 font-semibold">
+                {productUnitLabel}
+              </span>
             </div>
 
             {/* Costo Total Estimado */}
@@ -236,7 +336,7 @@ const ProductDetailPage = () => {
             <button
               className="cursor-pointer w-full md:w-auto bg-red-700 text-white text-xl py-3 px-8 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg disabled:bg-gray-400"
               onClick={handleAddToCart}
-              disabled={displayPrice === null || quantity < 0.5}
+              disabled={displayPrice === null || quantity < minVal}
             >
               🛒 Añadir al Carrito
             </button>

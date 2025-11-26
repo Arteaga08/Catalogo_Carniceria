@@ -13,7 +13,6 @@ const MONGODB_URI = process.env.MONGO_URI;
 connectDB();
 
 // --- DATOS DE PRUEBA (DATA) ---
-// Archivo: frontend/src/data/mockCategoriesGrouped.js (Ejemplo)
 
 const categories = {
   CARNICERÍA: [
@@ -102,7 +101,7 @@ const categories = {
 
 const products = [
   // ----------------------------------------------------------------------
-  // CATEGORÍA: CARNE DE RES (slug: "carne-de-res") - 4 Productos
+  // CATEGORÍA: CARNE DE RES (slug: "carne-de-res")
   // ----------------------------------------------------------------------
   {
     name: "Bistec de Res Selecto",
@@ -113,14 +112,16 @@ const products = [
     categorySlug: "carne-de-res",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "Kg",
         price: 195.0,
+        isIntegerUnit: false, // Peso = Decimales
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
       {
         unitName: "Medio Kilo (500g)",
         price: 97.5,
+        isIntegerUnit: true, // Venta por paquete fijo de 500g = Entero
         unitReference: "KG",
         approxWeightGrams: 500,
       },
@@ -136,9 +137,10 @@ const products = [
     categorySlug: "carne-de-res",
     variations: [
       {
-        unitName: "Paquete de 1 KG",
+        unitName: "KG",
         price: 150.0,
-        unitReference: "PAQ",
+        isIntegerUnit: false, // Peso
+        unitReference: "Kg",
         approxWeightGrams: 1000,
       },
     ],
@@ -153,8 +155,9 @@ const products = [
     categorySlug: "carne-de-res",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 120.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -170,8 +173,9 @@ const products = [
     categorySlug: "carne-de-res",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 85.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -180,7 +184,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: CARNE DE PUERCO (slug: "carne-de-puerco") - 4 Productos
+  // CATEGORÍA: CARNE DE PUERCO (slug: "carne-de-puerco")
   // ----------------------------------------------------------------------
   {
     name: "Chuleta de Puerco Ahumada",
@@ -191,8 +195,9 @@ const products = [
     categorySlug: "carne-de-puerco",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 110.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -208,9 +213,10 @@ const products = [
     categorySlug: "carne-de-puerco",
     variations: [
       {
-        unitName: "Rack (aprox. 1.5 KG)",
+        unitName: "KG",
         price: 290.0,
-        unitReference: "PZA",
+        isIntegerUnit: false, // Peso
+        unitReference: "KG",
         approxWeightGrams: 1500,
       },
     ],
@@ -225,8 +231,9 @@ const products = [
     categorySlug: "carne-de-puerco",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 95.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -242,8 +249,9 @@ const products = [
     categorySlug: "carne-de-puerco",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 140.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -252,7 +260,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: POLLO (slug: "pollo") - 4 Productos
+  // CATEGORÍA: POLLO (slug: "pollo")
   // ----------------------------------------------------------------------
   {
     name: "Pechuga de Pollo Sin Hueso",
@@ -263,8 +271,9 @@ const products = [
     categorySlug: "pollo",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 98.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -280,8 +289,9 @@ const products = [
     categorySlug: "pollo",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 70.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -296,8 +306,9 @@ const products = [
     categorySlug: "pollo",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 80.0,
+        isIntegerUnit: false, // Peso
         unitReference: "KG",
         approxWeightGrams: 1000,
       },
@@ -313,9 +324,10 @@ const products = [
     categorySlug: "pollo",
     variations: [
       {
-        unitName: "Paquete (500g)",
+        unitName: "KG",
         price: 75.0,
-        unitReference: "PAQ",
+        isIntegerUnit: false, // Peso
+        unitReference: "KG",
         approxWeightGrams: 500,
       },
     ],
@@ -323,7 +335,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: PROCESADO (slug: "procesado") - 4 Productos
+  // CATEGORÍA: PROCESADO (slug: "procesado")
   // ----------------------------------------------------------------------
   {
     name: "Jamón de Pavo y Cerdo",
@@ -337,12 +349,14 @@ const products = [
         unitName: "Paquete (250g)",
         price: 55.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 250,
       },
       {
         unitName: "Kilo (1000g)",
         price: 180.0,
         unitReference: "KG",
+        isIntegerUnit: false, // Kilo suelto = Decimales
         approxWeightGrams: 1000,
       },
     ],
@@ -359,6 +373,7 @@ const products = [
       {
         unitName: "Paquete (500g)",
         price: 40.0,
+        isIntegerUnit: true, // Paquete
         unitReference: "PAQ",
         approxWeightGrams: 500,
       },
@@ -372,11 +387,13 @@ const products = [
       "Tiras de tocino crujiente con profundo sabor ahumado. Ideal para desayunos.",
     imageURL: "/images/tocino.jpg",
     categorySlug: "procesado",
+    // isIntegerUnit eliminado de la raíz
     variations: [
       {
         unitName: "Paquete (200g)",
         price: 65.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 200,
       },
     ],
@@ -394,6 +411,7 @@ const products = [
         unitName: "Paquete (250g)",
         price: 45.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 250,
       },
     ],
@@ -401,7 +419,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: CORTES PARA ASAR (slug: "cortes-para-asar") - 4 Productos
+  // CATEGORÍA: CORTES PARA ASAR (slug: "cortes-para-asar")
   // ----------------------------------------------------------------------
   {
     name: "Arrachera Marinada",
@@ -415,6 +433,7 @@ const products = [
         unitName: "Paquete de 1.5 KG",
         price: 350.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Es un paquete cerrado
         approxWeightGrams: 1500,
       },
     ],
@@ -429,9 +448,10 @@ const products = [
     categorySlug: "cortes-para-asar",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 165.0,
         unitReference: "KG",
+        isIntegerUnit: false, // Peso
         approxWeightGrams: 1000,
       },
     ],
@@ -449,6 +469,7 @@ const products = [
         unitName: "Pieza (aprox. 300g)",
         price: 150.0,
         unitReference: "PZA",
+        isIntegerUnit: true, // Pieza = Entero
         approxWeightGrams: 300,
       },
     ],
@@ -463,9 +484,10 @@ const products = [
     categorySlug: "cortes-para-asar",
     variations: [
       {
-        unitName: "Kilo (1000g)",
+        unitName: "KG",
         price: 210.0,
         unitReference: "KG",
+        isIntegerUnit: false, // Peso
         approxWeightGrams: 1000,
       },
     ],
@@ -473,7 +495,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: CORTES PREMIUM (slug: "cortes-premium") - 4 Productos
+  // CATEGORÍA: CORTES PREMIUM (slug: "cortes-premium")
   // ----------------------------------------------------------------------
   {
     name: "Rib Eye Prime",
@@ -487,6 +509,7 @@ const products = [
         unitName: "Pieza (aprox. 400g)",
         price: 420.0,
         unitReference: "PZA",
+        isIntegerUnit: true, // Pieza
         approxWeightGrams: 400,
       },
     ],
@@ -504,6 +527,7 @@ const products = [
         unitName: "Pieza (aprox. 350g)",
         price: 380.0,
         unitReference: "PZA",
+        isIntegerUnit: true, // Pieza
         approxWeightGrams: 350,
       },
     ],
@@ -518,9 +542,10 @@ const products = [
     categorySlug: "cortes-premium",
     variations: [
       {
-        unitName: "Paquete (2 Piezas)",
+        unitName: "Pieza (aprox. 350g)",
         price: 550.0,
-        unitReference: "PAQ",
+        unitReference: "PZA",
+        isIntegerUnit: true, // Pieza
         approxWeightGrams: 300,
       },
     ],
@@ -538,6 +563,7 @@ const products = [
         unitName: "Pieza (aprox. 1.2 KG)",
         price: 950.0,
         unitReference: "PZA",
+        isIntegerUnit: true, // Pieza
         approxWeightGrams: 1200,
       },
     ],
@@ -545,7 +571,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: PAQUETES PARA ASAR (slug: "paquetes-para-asar") - 4 Productos
+  // CATEGORÍA: PAQUETES PARA ASAR (slug: "paquetes-para-asar")
   // ----------------------------------------------------------------------
   {
     name: "Paquete Familiar BBQ",
@@ -559,6 +585,7 @@ const products = [
         unitName: "Paquete Total",
         price: 799.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete completo
         approxWeightGrams: 4000,
       },
     ],
@@ -576,6 +603,7 @@ const products = [
         unitName: "Paquete Total",
         price: 1250.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete completo
         approxWeightGrams: 3500,
       },
     ],
@@ -593,6 +621,7 @@ const products = [
         unitName: "Paquete Total",
         price: 450.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete completo
         approxWeightGrams: 2000,
       },
     ],
@@ -610,6 +639,7 @@ const products = [
         unitName: "Paquete Total",
         price: 599.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete completo
         approxWeightGrams: 3000,
       },
     ],
@@ -617,20 +647,21 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: PAQUETES PARA DISCADA (slug: "paquetes-para-discada") - 4 Productos
+  // CATEGORÍA: PAQUETES PARA DISCADA (slug: "paquetes-para-discada")
   // ----------------------------------------------------------------------
   {
     name: "Paquete Discada Res/Puerco",
     slug: "paquete-discada-res-puerco",
     description:
-      "Carne de res, carne de puerco, tocino y chorizo listos para tu disco.",
+      "Paquete para 6 personas. Carne de res, carne de puerco, tocino y chorizo listos para tu disco.",
     imageURL: "/images/discada-res-puerco.jpg",
     categorySlug: "paquetes-para-discada",
     variations: [
       {
-        unitName: "Paquete 3 KG",
+        unitName: "Paquete Total",
         price: 650.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete completo
         approxWeightGrams: 3000,
       },
     ],
@@ -640,14 +671,15 @@ const products = [
     name: "Paquete Discada Pollo/Puerco",
     slug: "paquete-discada-pollo-puerco",
     description:
-      "Carne de pollo, puerco, salchicha y tocino. Una mezcla diferente y ligera.",
+      "Paquete para 10 personas. Carne de pollo, puerco, salchicha y tocino. Una mezcla diferente y ligera.",
     imageURL: "/images/discada-pollo-puerco.jpg",
     categorySlug: "paquetes-para-discada",
     variations: [
       {
-        unitName: "Paquete 3 KG",
+        unitName: "Paquete Total",
         price: 590.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete completo
         approxWeightGrams: 3000,
       },
     ],
@@ -657,14 +689,15 @@ const products = [
     name: "Paquete Surtido Premium Discada",
     slug: "paquete-surtido-discada",
     description:
-      "Incluye Arrachera, Bistec, Lomo de Cerdo y Chuleta. Para una discada de lujo.",
+      "Paquete para 15 personas. Incluye Arrachera, Bistec, Lomo de Cerdo y Chuleta. Para una discada de lujo.",
     imageURL: "/images/discada-premium.jpg",
     categorySlug: "paquetes-para-discada",
     variations: [
       {
-        unitName: "Paquete 4 KG",
+        unitName: "Paquete Total",
         price: 890.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete completo
         approxWeightGrams: 4000,
       },
     ],
@@ -682,6 +715,7 @@ const products = [
         unitName: "Botella 500ml",
         price: 75.0,
         unitReference: "BOT",
+        isIntegerUnit: true, // Botella (entero)
         approxWeightGrams: 500,
       },
     ],
@@ -689,7 +723,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: CARNITAS TRADICIONALES (slug: "carnitas-tradicionales") - 4 Productos
+  // CATEGORÍA: CARNITAS TRADICIONALES (slug: "carnitas-tradicionales")
   // ----------------------------------------------------------------------
   {
     name: "Carnitas Surtidas (Maciza, Cuerito, Costilla)",
@@ -703,6 +737,7 @@ const products = [
         unitName: "Kilo (1000g)",
         price: 190.0,
         unitReference: "KG",
+        isIntegerUnit: false, // Peso
         approxWeightGrams: 1000,
       },
     ],
@@ -720,6 +755,7 @@ const products = [
         unitName: "Kilo (1000g)",
         price: 210.0,
         unitReference: "KG",
+        isIntegerUnit: false, // Peso
         approxWeightGrams: 1000,
       },
     ],
@@ -737,6 +773,7 @@ const products = [
         unitName: "Paquete (500g)",
         price: 80.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 500,
       },
     ],
@@ -754,6 +791,7 @@ const products = [
         unitName: "Medio Kilo (500g)",
         price: 95.0,
         unitReference: "KG",
+        isIntegerUnit: true, // Venta por unidad de 500g fija
         approxWeightGrams: 500,
       },
     ],
@@ -761,7 +799,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: CHICHARRONES (slug: "chicharrones") - 4 Productos
+  // CATEGORÍA: CHICHARRONES (slug: "chicharrones")
   // ----------------------------------------------------------------------
   {
     name: "Chicharrón Prensado",
@@ -775,6 +813,7 @@ const products = [
         unitName: "Kilo (1000g)",
         price: 160.0,
         unitReference: "KG",
+        isIntegerUnit: false, // Peso
         approxWeightGrams: 1000,
       },
     ],
@@ -792,6 +831,7 @@ const products = [
         unitName: "Paquete (250g)",
         price: 70.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 250,
       },
     ],
@@ -809,6 +849,7 @@ const products = [
         unitName: "Kilo (1000g)",
         price: 230.0,
         unitReference: "KG",
+        isIntegerUnit: false, // Peso
         approxWeightGrams: 1000,
       },
     ],
@@ -826,6 +867,7 @@ const products = [
         unitName: "Botella 300ml",
         price: 50.0,
         unitReference: "BOT",
+        isIntegerUnit: true, // Botella
         approxWeightGrams: 300,
       },
     ],
@@ -833,7 +875,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: HAMBURGUESAS (slug: "hamburguesas") - 4 Productos
+  // CATEGORÍA: HAMBURGUESAS (slug: "hamburguesas")
   // ----------------------------------------------------------------------
   {
     name: "Carne para Hamburguesa de Res",
@@ -847,6 +889,7 @@ const products = [
         unitName: "Paquete 4 Pzas",
         price: 180.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 500,
       },
     ],
@@ -863,6 +906,7 @@ const products = [
         unitName: "Paquete 4 Pzas",
         price: 150.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 500,
       },
     ],
@@ -880,6 +924,7 @@ const products = [
         unitName: "Paquete 12 Pzas",
         price: 250.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 600,
       },
     ],
@@ -897,6 +942,7 @@ const products = [
         unitName: "Paquete 4 Pzas",
         price: 45.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 400,
       },
     ],
@@ -904,7 +950,7 @@ const products = [
   },
 
   // ----------------------------------------------------------------------
-  // CATEGORÍA: NUGGETS (slug: "nuggets") - 4 Productos
+  // CATEGORÍA: NUGGETS (slug: "nuggets")
   // ----------------------------------------------------------------------
   {
     name: "Nuggets de Pollo Clásicos",
@@ -918,6 +964,7 @@ const products = [
         unitName: "Bolsa (1 KG)",
         price: 180.0,
         unitReference: "BOL",
+        isIntegerUnit: true, // Bolsa cerrada
         approxWeightGrams: 1000,
       },
     ],
@@ -935,6 +982,7 @@ const products = [
         unitName: "Paquete (500g)",
         price: 120.0,
         unitReference: "PAQ",
+        isIntegerUnit: true, // Paquete
         approxWeightGrams: 500,
       },
     ],
@@ -952,6 +1000,7 @@ const products = [
         unitName: "Bolsa (500g)",
         price: 140.0,
         unitReference: "BOL",
+        isIntegerUnit: true, // Bolsa cerrada
         approxWeightGrams: 500,
       },
     ],
@@ -964,17 +1013,46 @@ const products = [
       "Salsa clásica de miel mostaza para acompañar tus nuggets y tiras de pollo.",
     imageURL: "/images/dip-miel-mostaza.jpg",
     categorySlug: "nuggets",
+    isIntegerUnit: true,
     variations: [
       {
         unitName: "Bote 300ml",
         price: 45.0,
         unitReference: "BOT",
+         // Bote
         approxWeightGrams: 300,
       },
     ],
     isAvailable: true,
   },
 ];
+
+/**
+ * Helper para marcar productos/variaciones como 'isIntegerUnit' y normalizar la etiqueta de unidad.
+ */
+function applyIntegerFlags(productsArray, options = {}) {
+  // Ya no dependemos solo de la detección automática, porque los datos están explícitos.
+  // Pero mantenemos la normalización de unitLabel.
+
+  productsArray.forEach((prod) => {
+    if (Array.isArray(prod.variations)) {
+      prod.variations.forEach((vari) => {
+        // 🚨 CORRECCIÓN 2: Normalizar unitName a unitLabel
+        if (vari.unitName && !vari.unitLabel) {
+          vari.unitLabel = vari.unitName;
+        }
+
+        // Si se nos pasó alguno, aplicamos un default seguro (false)
+        if (typeof vari.isIntegerUnit === "undefined") {
+          vari.isIntegerUnit = false;
+        }
+      });
+    }
+  });
+}
+
+// Aplicar las flags de normalización
+applyIntegerFlags(products);
 
 async function seedDB() {
   if (!MONGODB_URI) {
