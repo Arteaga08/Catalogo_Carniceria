@@ -1,7 +1,12 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
+import colors from "colors";
+
 import Category from "./models/categoryModel.js";
 import Product from "./models/ProductModel.js";
+import User from "./models/userModel.js";
+
+import users from "./data/users.js";
 
 import connectDB from "./config/db.js";
 
@@ -1019,7 +1024,7 @@ const products = [
         unitName: "Bote 300ml",
         price: 45.0,
         unitReference: "BOT",
-         // Bote
+        // Bote
         approxWeightGrams: 300,
       },
     ],
@@ -1031,18 +1036,12 @@ const products = [
  * Helper para marcar productos/variaciones como 'isIntegerUnit' y normalizar la etiqueta de unidad.
  */
 function applyIntegerFlags(productsArray, options = {}) {
-  // Ya no dependemos solo de la detección automática, porque los datos están explícitos.
-  // Pero mantenemos la normalización de unitLabel.
-
   productsArray.forEach((prod) => {
     if (Array.isArray(prod.variations)) {
       prod.variations.forEach((vari) => {
-        // 🚨 CORRECCIÓN 2: Normalizar unitName a unitLabel
         if (vari.unitName && !vari.unitLabel) {
           vari.unitLabel = vari.unitName;
         }
-
-        // Si se nos pasó alguno, aplicamos un default seguro (false)
         if (typeof vari.isIntegerUnit === "undefined") {
           vari.isIntegerUnit = false;
         }
@@ -1051,33 +1050,45 @@ function applyIntegerFlags(productsArray, options = {}) {
   });
 }
 
-// Aplicar las flags de normalización
 applyIntegerFlags(products);
 
 async function seedDB() {
-  if (!MONGODB_URI) {
+  if (!process.env.MONGO_URI) {
     console.error(
-      "❌ MONGODB_URI no está definida. ¡Asegúrate de configurar backend/.env!"
+      "❌ MONGO_URI no está definida. ¡Asegúrate de configurar backend/.env!"
     );
-    return;
+    process.exit(1);
   }
 
   try {
     // 1. Limpiar datos anteriores
-    await Category.deleteMany();
     await Product.deleteMany();
-    console.log("🗑️ Colecciones limpiadas (Categories y Products).");
+    await Category.deleteMany();
+    await User.deleteMany(); // <--- Mantén esta línea para limpiar usuarios
+    console.log(
+      "🗑️ Colecciones limpiadas (Users, Categories y Products).".red.bold
+    );
 
-    // 2. Construir array plano de categorías a insertar a partir del objeto agrupado
+    // 2. Insertar usuarios UNO POR UNO para activar el middleware 'pre("save")'
+    console.log("👥 Iniciando importación de usuarios...");
+    const createdUsers = await Promise.all(
+      users.map(async (user) => {
+        // Asegúrate de que los usuarios se crean con el modelo 'User'
+        // y que la contraseña se hashea antes de guardarse.
+        const newUser = new User(user); // Crea una nueva instancia del modelo
+        await newUser.save(); // Guarda la instancia, activando el middleware pre('save')
+        return newUser;
+      })
+    );
+
+    // 3. Construir array plano de categorías a insertar
     const categoriesToInsert = [];
-
     for (const principal in categories) {
       if (categories.hasOwnProperty(principal)) {
         categories[principal].forEach((subCat) => {
           categoriesToInsert.push({
             name: subCat.name,
             slug: subCat.slug,
-            // Normalizar el nombre del campo de imagen (iconURL -> imageURL)
             imageURL: subCat.iconURL || subCat.imageURL || subCat.image || null,
             order: subCat.order || 0,
             categoryPrincipal: principal,
@@ -1086,14 +1097,23 @@ async function seedDB() {
       }
     }
 
-    // Insertar categorías y productos (una sola vez cada colección)
+    // Insertar categorías y productos (sigue usando insertMany para ellos)
     await Category.insertMany(categoriesToInsert);
+    console.log("📂 Categorías importadas!".green.bold);
     await Product.insertMany(products);
-    console.log("✨ Datos de prueba importados con éxito.");
+    console.log("🥩 Productos importados!".green.bold);
+
+    console.log("✨ Datos de prueba importados con éxito.".green.bold);
   } catch (error) {
-    console.error("❌ Error en la inserción de datos:", error.message);
+    console.error(
+      `❌ Error en la inserción de datos: ${error.message}`.red.bold
+    );
+    process.exit(1);
   } finally {
-    await mongoose.connection.close();
+    if (mongoose.connection.readyState === 1) {
+      await mongoose.connection.close();
+      console.log("🔌 Conexión a MongoDB cerrada.");
+    }
   }
 }
 
