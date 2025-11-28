@@ -144,7 +144,7 @@ const products = [
       {
         unitName: "KG",
         price: 150.0,
-        isIntegerUnit: false, // Peso
+        isIntegerUnit: false,
         unitReference: "Kg",
         approxWeightGrams: 1000,
       },

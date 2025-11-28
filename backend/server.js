@@ -2,6 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
 import connectDB from './config/db.js';
+import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from "./routes/productRoutes.js"
 import userRoute from "./routes/userRoutes.js"
@@ -31,6 +33,10 @@ app.use('/api/categories', categoryRoutes);
 app.use('/api/products', productRoutes); 
 
 app.use("/api/users", userRoute)
+
+// Middlewares de manejo de errores.
+app.use(notFound);
+app.use(errorHandler);
 
 
 // LISTENER

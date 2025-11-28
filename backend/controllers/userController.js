@@ -50,6 +50,28 @@ const getUserProfile = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Auth user & get token
+// @route   POST /api/users/login
+// @access  Public
+const loginUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+
+  const user = await User.findOne({ email });
+
+  if (user && (await user.matchPassword(password))) {
+    res.json({
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      role: user.role,
+      token: generateToken(user._id),
+    });
+  } else {
+    res.status(401);
+    throw new Error('Email o contraseña inválidos');
+  }
+});
+
 // @desc    Register a new user (Aunque no tendremos un signup público, esta función puede ser útil
 //          si en el futuro se desea crear usuarios admin/editor desde el propio panel por otro admin)
 // @route   POST /api/users
@@ -64,11 +86,12 @@ const registerUser = asyncHandler(async (req, res) => {
     throw new Error("Ya existe un usuario con ese email");
   }
 
+  const userRole = role || "user"
   const user = await User.create({
     name,
     email,
     password,
-    role, // Permitimos definir el rol al registrar (útil para la creación manual o seeder)
+    role: userRole,// Permitimos definir el rol al registrar (útil para la creación manual o seeder)
   });
 
   if (user) {
@@ -86,4 +109,92 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { authUser, getUserProfile, registerUser };
+// @desc    Update user profile
+// @route   PUT /api/users/profile
+// @access  Private
+const updateUserProfile = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.user._id);
+
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    if (req.body.password) {
+      user.password = req.body.password; // Mongoose manejará el hash aquí si tu modelo lo tiene configurado
+    }
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+      token: generateToken(updatedUser._id),
+    });
+  } else {
+    res.status(404);
+    throw new Error('Usuario no encontrado');
+  }
+});
+
+// @desc    Get user by ID
+// @route   GET /api/users/:id
+// @access  Private/Admin
+const getUserById = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id).select('-password');
+
+  if (user) {
+    res.json(user);
+  } else {
+    res.status(404);
+    throw new Error('Usuario no encontrado');
+  }
+});
+
+// @desc    Update user
+// @route   PUT /api/users/:id
+// @access  Private/Admin
+const updateUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    user.name = req.body.name || user.name;
+    user.email = req.body.email || user.email;
+    user.role = req.body.role || user.role; // Permite al admin cambiar el rol
+    // No permitimos cambiar la contraseña de otro usuario directamente por seguridad,
+    // o sería una ruta/proceso diferente (ej. resetear contraseña).
+
+    const updatedUser = await user.save();
+
+    res.json({
+      _id: updatedUser._id,
+      name: updatedUser.name,
+      email: updatedUser.email,
+      role: updatedUser.role,
+    });
+  } else {
+    res.status(404);
+    throw new Error('Usuario no encontrado');
+  }
+});
+
+// @desc    Delete user
+// @route   DELETE /api/users/:id
+// @access  Private/Admin
+const deleteUser = asyncHandler(async (req, res) => {
+  const user = await User.findById(req.params.id);
+
+  if (user) {
+    if (user.role === 'admin') { // Seguridad: No permitir eliminar al propio admin si es el único
+        res.status(400);
+        throw new Error('No se puede eliminar un usuario administrador');
+    }
+    await User.deleteOne({_id: user._id}); // o await user.remove(); (si estás en Mongoose < 6)
+    res.json({ message: 'Usuario eliminado exitosamente' });
+  } else {
+    res.status(404);
+    throw new Error('Usuario no encontrado');
+  }
+});
+
+export { authUser, loginUser, getUserProfile, registerUser, updateUserProfile, getUserById, updateUser, deleteUser };
