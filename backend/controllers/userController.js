@@ -3,28 +3,13 @@ import asyncHandler from "express-async-handler"; // Para manejar excepciones en
 import User from "../models/userModel.js"; // Importamos el modelo de usuario
 import generateToken from "../utils/generateToken.js"; // Importamos la función para generar el token
 
-// @desc    Auth user & get token
-// @route   POST /api/users/login
-// @access  Public
-const authUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
 
-  const user = await User.findOne({ email });
-
-  if (user && (await user.matchPassword(password))) {
-    // Si el usuario existe y la contraseña coincide
-    res.json({
-      _id: user._id,
-      name: user.name,
-      email: user.email,
-      role: user.role, // Incluimos el rol en la respuesta
-      token: generateToken(user._id), // Generamos el token
-    });
-  } else {
-    // Si las credenciales son incorrectas
-    res.status(401); // 401 Unauthorized
-    throw new Error("Email o contraseña inválidos");
-  }
+// @desc    Get all users
+// @route   GET /api/users
+// @access  Private/Admin
+const getUsers = asyncHandler(async (req, res) => {
+  const users = await User.find({}).select('-password'); // Excluimos la contraseña
+  res.json(users);
 });
 
 // @desc    Get user profile
@@ -197,4 +182,4 @@ const deleteUser = asyncHandler(async (req, res) => {
   }
 });
 
-export { authUser, loginUser, getUserProfile, registerUser, updateUserProfile, getUserById, updateUser, deleteUser };
+export { loginUser, getUsers, getUserProfile, registerUser, updateUserProfile, getUserById, updateUser, deleteUser };

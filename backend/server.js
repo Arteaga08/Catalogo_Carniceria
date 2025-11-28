@@ -1,12 +1,15 @@
 import express from 'express';
 import dotenv from 'dotenv';
 import cors from 'cors';
+import path from 'path';
+
 import connectDB from './config/db.js';
 import { notFound, errorHandler } from './middleware/errorMiddleware.js';
 
 import categoryRoutes from './routes/categoryRoutes.js';
 import productRoutes from "./routes/productRoutes.js"
 import userRoute from "./routes/userRoutes.js"
+import uploadRoutes from "./routes/uploadRoutes.js"
 
 
 // Cargar variables de entorno
@@ -29,10 +32,13 @@ app.get('/', (req, res) => {
 
 // Implementación de la ruta
 app.use('/api/categories', categoryRoutes); 
-
 app.use('/api/products', productRoutes); 
-
 app.use("/api/users", userRoute)
+app.use('/api/upload', uploadRoutes);
+
+//Img Upload
+const __dirname = path.resolve();
+app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 
 // Middlewares de manejo de errores.
 app.use(notFound);

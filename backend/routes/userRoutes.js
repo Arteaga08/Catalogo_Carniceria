@@ -1,25 +1,46 @@
-import express from 'express';
-import { authUser, getUserProfile, registerUser } from '../controllers/userController.js';
-import { protect, admin } from '../middleware/authMiddleware.js'; // Importamos los middlewares de protección
-
+// backend/routes/userRoutes.js
+import express from "express";
 const router = express.Router();
-// Ruta para registrar un nuevo usuario (solo para administradores o creación manual)
-// Usamos .route('/') para encadenar métodos HTTP para la misma ruta
-router.post('/register', protect, admin, registerUser); // Solo un admin puede registrar nuevos usuarios
+import {
+  registerUser,
+  loginUser,
+  getUserProfile,
+  updateUserProfile,
+  getUsers,
+  getUserById,
+  updateUser,
+  deleteUser,
+} from "../controllers/userController.js";
+import { protect, admin } from "../middleware/authMiddleware.js";
 
-// Ruta para la autenticación de usuarios (Login)
-router.post('/login', authUser);
+// Rutas públicas:
+// POST /api/users/login -> Autenticar usuario y obtener token
+router.post("/login", loginUser);
 
-// Ruta para obtener el perfil del usuario autenticado
-// Se protege con `protect` para asegurar que solo usuarios logueados puedan acceder
-// .route('/profile') es otra forma de definir rutas
+// Rutas protegidas para el perfil del propio usuario:
+// GET /api/users/profile -> Obtener perfil del usuario logueado
+// PUT /api/users/profile -> Actualizar perfil del usuario logueado
 router
-  .route('/profile')
-  .get(protect, getUserProfile); // GET para obtener el perfil del usuario autenticado
+  .route("/profile")
+  .get(protect, getUserProfile)
+  .put(protect, updateUserProfile);
 
-// 🚨 IMPORTANTE: Necesitamos conectar estas rutas en tu archivo principal `server.js` (o `app.js`)
-// Abre tu archivo `backend/server.js` y añade:
-// import userRoutes from './routes/userRoutes.js';
-// app.use('/api/users', userRoutes);
+// Rutas protegidas por ADMIN para la gestión de usuarios:
+// GET /api/users -> Obtener todos los usuarios
+// POST /api/users/register -> Registrar un nuevo usuario (solo para admins si no quieres registro público)
+router
+  .route("/")
+  .get(protect, admin, getUsers)
+  .post(protect, admin, registerUser); // Si decides que solo un admin puede registrar
+
+// Rutas protegidas por ADMIN para operaciones sobre un usuario específico por ID:
+// GET /api/users/:id -> Obtener detalles de un usuario por ID
+// PUT /api/users/:id -> Actualizar los datos de un usuario (incluido el rol)
+// DELETE /api/users/:id -> Eliminar un usuario
+router
+  .route("/:id")
+  .get(protect, admin, getUserById)
+  .put(protect, admin, updateUser)
+  .delete(protect, admin, deleteUser);
 
 export default router;
