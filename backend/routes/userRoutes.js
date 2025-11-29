@@ -12,10 +12,11 @@ import {
   deleteUser,
 } from "../controllers/userController.js";
 import { protect, admin } from "../middleware/authMiddleware.js";
+import { validateRegisterUser, validateLoginUser, validateUpdateUser, validateUpdateUserProfile } from "../middleware/validationMiddleware.js";
 
 // Rutas públicas:
 // POST /api/users/login -> Autenticar usuario y obtener token
-router.post("/login", loginUser);
+router.post("/login", validateLoginUser, loginUser);
 
 // Rutas protegidas para el perfil del propio usuario:
 // GET /api/users/profile -> Obtener perfil del usuario logueado
@@ -23,7 +24,7 @@ router.post("/login", loginUser);
 router
   .route("/profile")
   .get(protect, getUserProfile)
-  .put(protect, updateUserProfile);
+  .put(protect, validateUpdateUserProfile, updateUserProfile);
 
 // Rutas protegidas por ADMIN para la gestión de usuarios:
 // GET /api/users -> Obtener todos los usuarios
@@ -31,7 +32,7 @@ router
 router
   .route("/")
   .get(protect, admin, getUsers)
-  .post(protect, admin, registerUser); // Si decides que solo un admin puede registrar
+  .post(protect, admin, validateRegisterUser, registerUser); // Si decides que solo un admin puede registrar
 
 // Rutas protegidas por ADMIN para operaciones sobre un usuario específico por ID:
 // GET /api/users/:id -> Obtener detalles de un usuario por ID
@@ -40,7 +41,7 @@ router
 router
   .route("/:id")
   .get(protect, admin, getUserById)
-  .put(protect, admin, updateUser)
+  .put(protect, admin, validateUpdateUser, updateUser)
   .delete(protect, admin, deleteUser);
 
 export default router;

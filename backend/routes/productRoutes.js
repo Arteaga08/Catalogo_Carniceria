@@ -10,7 +10,16 @@ import {
   updateProduct,
   deleteProduct,
 } from '../controllers/productController.js';
+
+import {
+  validateProduct,
+  validateProductSlugParam,
+  validateCategorySlugParam, // Para la ruta de categoría
+  handleValidationErrors,
+} from '../middleware/validationMiddleware.js'; 
+
 import { protect, admin, editor } from '../middleware/authMiddleware.js';
+import { query, param } from 'express-validator';
 
 // --- Rutas Públicas (GETs) ---
 
@@ -18,23 +27,43 @@ import { protect, admin, editor } from '../middleware/authMiddleware.js';
 // @desc    Obtener todos los productos (con paginación, filtros y búsqueda)
 // @access  Public
 // Nota: La lógica de búsqueda y filtrado se maneja en getProducts
-router.route('/').get(getProducts);
+// Aquí podríamos añadir validación para `limit` y `q` si es necesario en `getProducts`
+router.route('/').get(
+  [
+    // Opcional: Validaciones para los query params de getProducts si tu getProducts los espera
+    // query('limit').optional().isInt({ min: 1 }).withMessage('Limit debe ser un número entero positivo'),
+    // query('page').optional().isInt({ min: 1 }).withMessage('Page debe ser un número entero positivo'),
+    // query('category').optional().trim().notEmpty().withMessage('Category slug no puede estar vacío'),
+    // query('q').optional().trim().notEmpty().withMessage('Query de búsqueda no puede estar vacía'),
+    // handleValidationErrors, // Si usas las validaciones de query arriba
+  ],
+  getProducts
+);
 
 // @route   GET /api/products/search?q=query
 // @desc    Busca productos por nombre o descripción
 // @access  Public
 // Nota: Esta ruta /search DEBE ir antes de /:slug para que Express no confunda 'search' con un slug
-router.route('/search').get(searchProducts);
+router.route('/search').get(
+  [
+    query('q').trim().notEmpty().withMessage('El parámetro de búsqueda (q) es requerido'),
+    handleValidationErrors,
+  ],
+  searchProducts
+);
 
 // @route   GET /api/products/category/:categorySlug
 // @desc    Obtiene productos por una categoría (slug)
 // @access  Public
-router.route('/category/:categorySlug').get(getProductsByCategory);
+router.route('/category/:categorySlug').get(
+  validateCategorySlugParam, // Valida que el categorySlug en el parámetro de la URL no esté vacío
+  getProductsByCategory
+);
 
 // @route   GET /api/products/:slug
 // @desc    Obtiene un producto por su slug
 // @access  Public
-router.route('/:slug').get(getProductBySlug);
+router.route('/:slug').get(validateProductSlugParam, getProductBySlug);
 
 
 // --- Rutas Protegidas (CRUD - Crear, Actualizar, Eliminar) ---
@@ -43,20 +72,20 @@ router.route('/:slug').get(getProductBySlug);
 // @desc    Crear un nuevo producto
 // @access  Private/Admin/Editor
 // Solo administradores y editores pueden crear productos
-router.route('/').post(protect, editor, createProduct); // editor permite admin también
+router.route('/').post(protect, editor, validateProduct, createProduct); // Validar datos del producto al crear
 
 
 // @route   PUT /api/products/:slug
 // @desc    Actualizar un producto existente (por slug)
 // @access  Private/Admin/Editor
 // Solo administradores y editores pueden actualizar productos
-router.route('/:slug').put(protect, editor, updateProduct);
+router.route('/:slug').put(protect, editor, validateProductSlugParam, validateProduct, updateProduct); // Validar slug y datos del producto
 
 // @route   DELETE /api/products/:slug
 // @desc    Eliminar un producto (por slug)
 // @access  Private/Admin
 // Solo administradores pueden eliminar productos
-router.route('/:slug').delete(protect, admin, deleteProduct);
+router.route('/:slug').delete(protect, admin, validateProductSlugParam, deleteProduct); // Validar slug al eliminar
 
 
 export default router;

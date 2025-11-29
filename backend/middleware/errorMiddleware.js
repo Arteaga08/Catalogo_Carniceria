@@ -1,22 +1,35 @@
 // backend/middleware/errorMiddleware.js
 
-// Middleware para manejar rutas no encontradas (404)
 const notFound = (req, res, next) => {
   const error = new Error(`No Encontrado - ${req.originalUrl}`);
   res.status(404);
   next(error); // Pasa el error al siguiente middleware (errorHandler)
 };
 
-// Middleware general para manejar errores
 const errorHandler = (err, req, res, next) => {
-  // A veces el status code ya viene definido (ej. 401, 403, 404), si no, usa 500
-  const statusCode = res.statusCode === 200 ? 500 : res.statusCode;
-  res.status(statusCode);
+  let statusCode = res.statusCode === 200 ? 500 : res.statusCode;
+  let message = err.message;
 
-  res.json({
-    message: err.message,
-    // En desarrollo, enviamos la pila del error para depurar. En producción, la ocultamos.
-    stack: process.env.NODE_ENV === "production" ? null : err.stack,
+  // Si es un error de Mongoose de CastError (ID incorrecto)
+  if (err.name === "CastError" && err.kind === "ObjectId") {
+    statusCode = 404;
+    message = "Recurso no encontrado";
+  }
+
+  // <<<<<<<<<<<<<<<<<<<< CORRECCIÓN IMPORTANTE AQUÍ >>>>>>>>>>>>>>>>>>>>>>
+  // Si los headers ya fueron enviados, no intentar enviar otra respuesta
+  if (res.headersSent) {
+    console.error(
+      "Error handler: Headers already sent, cannot send error response again."
+    );
+    return next(err);
+  }
+  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+
+  // Envía la respuesta de error
+  res.status(statusCode).json({
+    message: message,
+    stack: process.env.NODE_ENV === "production" ? null : err.stack, // Stacktrace solo en desarrollo
   });
 };
 
