@@ -5,10 +5,17 @@ import Footer from "./components/Footer";
 import HomePage from "./pages/HomePage";
 import CartPage from "./pages/CartPage";
 
+import { AuthProvider } from "./context/authContext";
 import { CartProvider } from "./context/CartCotext";
 import ScrollToTop from "./components/ScrollToTop";
 import ProductDetailPage from "./pages/ProductPage";
-// 👈 IMPORTAR el CartProvider
+
+import ProtectedRoute from "./components/auth/ProtectedRoute";
+import AdminLayout from "./components/layout/AdminLayout";
+import LoginPage from "./pages/LoginPage";
+import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
+import ProductListPage from "./pages/admin/products/ProductListPage";
+import CategoryListPage from "./pages/admin/categories/CategoryListPage";
 
 // Asegúrate de que este archivo exista: frontend/src/context/CartContext.jsx
 
@@ -16,23 +23,40 @@ const App = () => {
   return (
     <Router>
       <ScrollToTop />
-      <CartProvider>
-        <Header />
-        <main className="min-h-screen">
-          <Routes>
-            {/* Rutas existentes */}
-            <Route path="/" element={<HomePage />} />
-            <Route path="/products/category/:slug" element={<HomePage />} />
-            <Route path="/products/:slug" element={<ProductDetailPage />} />
-            <Route path="/cart" element={<CartPage />} />
+      <AuthProvider>
+        <CartProvider>
+          <Header />
+          <main className="min-h-screen">
+            <Routes>
+              {/* Rutas Publicas */}
+              <Route path="/" element={<HomePage />} />
+              <Route path="/products/category/:slug" element={<HomePage />} />
+              <Route path="/products/:slug" element={<ProductDetailPage />} />
+              <Route path="/cart" element={<CartPage />} />
+              <Route path="/login" element={<LoginPage />} />
 
-            {/* Futuras rutas del carrito (por ejemplo, /cart) */}
-            {/* <Route path="/cart" element={<CartPage />} /> */}
-          </Routes>
-        </main>
-        <Footer />
-      </CartProvider>{" "}
-      {/* 👈 CERRAR CartProvider */}
+              {/* Rutas protegidas. Administrador */}
+              <Route
+                path="/admin"
+                element={
+                  <ProtectedRoute allowedRoles={["admin", "editor"]}>
+                    <AdminLayout />{" "}
+                    {/* AdminLayout contendrá el Sidebar y Main Area */}
+                  </ProtectedRoute>
+                }
+              ></Route>
+
+              {/* Rutas Hijas de /admin */}
+              <Route index element={<AdminDashboardPage />} />
+              <Route path="products" element={<ProductListPage />} />
+              <Route path="categories" element={<CategoryListPage />} />
+              {/* Añadiremos los formularios de new/edit aquí más adelante */}
+            </Routes>
+          </main>
+          <Footer />
+        </CartProvider>{" "}
+        {/* 👈 CERRAR CartProvider */}
+      </AuthProvider>
     </Router>
   );
 };
