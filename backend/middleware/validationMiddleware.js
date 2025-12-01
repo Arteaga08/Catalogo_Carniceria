@@ -187,6 +187,7 @@ const validateSlugParam = [
 
 const validateProduct = [
   body("name")
+    .optional()
     .trim()
     .notEmpty()
     .withMessage("El nombre del producto es requerido")
@@ -209,15 +210,18 @@ const validateProduct = [
       }
     }),
   body("description")
+    .optional()
     .trim()
     .notEmpty()
     .withMessage("La descripción del producto es requerida")
     .isLength({ min: 10 })
     .withMessage("La descripción debe tener al menos 10 caracteres"),
   body("price")
+    .optional()
     .isFloat({ min: 0.01 })
     .withMessage("El precio debe ser un número positivo"),
   body("stock")
+    .optional()
     .isInt({ min: 0 })
     .withMessage("El stock debe ser un número entero no negativo"),
   body("imageURL")
@@ -225,6 +229,7 @@ const validateProduct = [
     .isURL()
     .withMessage("La URL de la imagen debe ser una URL válida"),
   body("categorySlug")
+    .optional()
     .notEmpty()
     .withMessage("El slug de la categoría es requerido")
     .custom(async (value) => {
@@ -234,6 +239,7 @@ const validateProduct = [
       }
     }),
   body("variations")
+    .optional()
     .isArray()
     .withMessage("Las variaciones deben ser un array")
     .notEmpty()
