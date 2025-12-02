@@ -5,6 +5,7 @@ import SideBar from "./SideBar";
 import CategoryNavigator from "./CategoryNavigator";
 import { useCart } from "../context/CartCotext";
 import ImageCarousel from "./ImageCarousel";
+import { useAuth } from "../context/authContext";
 
 const Header = () => {
   const [groupedCategories, setGroupedCategories] = useState({});
@@ -14,6 +15,7 @@ const Header = () => {
   const [selectedPrincipalFromSidebar, setSelectedPrincipalFromSidebar] =
     useState(null);
   const { cartCount } = useCart();
+  const { isAuthenticated, logout, user } = useAuth();
 
   const [searchTerm, setSearchTerm] = useState("");
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
@@ -23,6 +25,7 @@ const Header = () => {
   const location = useLocation();
   const currentPath = location.pathname;
 
+  const isAdminRoute = currentPath.startsWith("/admin");
   const isHomePage = currentPath === "/" && !location.search.includes("q=");
 
   const getActiveCategorySlug = () => {
@@ -125,7 +128,7 @@ const Header = () => {
 
           {/* Logo/Título */}
           <Link
-            to="/"
+            to={isAdminRoute ? "/admin" : "/"}
             className={`text-2xl md:text-3xl font-extrabold tracking-tight hover:text-red-300 transition-colors flex-1 md:flex-none ${
               isSearchExpanded ? "hidden sm:block" : ""
             }`}
@@ -137,7 +140,9 @@ const Header = () => {
           {/* ⬅️ CLAVE: El div ahora contiene el formulario y los botones de control de expansión */}
           <div
             className={`flex items-center justify-end ${
-              isSearchExpanded ? "w-full absolute inset-x-0 px-4" : "md:flex-1 md:max-w-lg"
+              isSearchExpanded
+                ? "w-full absolute inset-x-0 px-4"
+                : "md:flex-1 md:max-w-lg"
             }`}
           >
             {/* ⬅️ Formulario de Búsqueda */}
@@ -177,100 +182,115 @@ const Header = () => {
             </form>
 
             {/* ⬅️ Contenedor de Botones de Control Móvil */}
-            <div className={`flex items-center ${isSearchExpanded ? "ml-2" : ""}`}>
-                {/* Botón de expandir búsqueda en móvil (Lupa) */}
-                <button
+            <div
+              className={`flex items-center ${isSearchExpanded ? "ml-2" : ""}`}
+            >
+              {/* Botón de expandir búsqueda en móvil (Lupa) */}
+              <button
                 onClick={() => setIsSearchExpanded(true)}
                 className={`p-2 rounded hover:bg-red-600 transition-colors md:hidden cursor-pointer ${
-                    isSearchExpanded ? "hidden" : "block"
+                  isSearchExpanded ? "hidden" : "block"
                 }`}
-                >
+              >
                 {/* SVG de Lupa (Solo se muestra cuando no está expandido) */}
                 <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    className="h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                    stroke="currentColor"
-                    strokeWidth={2}
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-6 w-6"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
                 >
-                    <path
+                  <path
                     strokeLinecap="round"
                     strokeLinejoin="round"
                     d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                    />
+                  />
                 </svg>
-                </button>
-                
-                {/* Botón de cerrar búsqueda en móvil (X) */}
-                {isSearchExpanded && (
+              </button>
+
+              {/* Botón de cerrar búsqueda en móvil (X) */}
+              {isSearchExpanded && (
                 <button
-                    onClick={() => {
+                  onClick={() => {
                     setIsSearchExpanded(false);
                     setSearchTerm("");
-                    }}
-                    // ⬅️ CLAVE: ELIMINAMOS 'absolute right-4'. El flujo 'flex' lo posiciona.
-                    className="p-2 rounded hover:bg-red-600 transition-colors md:hidden cursor-pointer"
+                  }}
+                  // ⬅️ CLAVE: ELIMINAMOS 'absolute right-4'. El flujo 'flex' lo posiciona.
+                  className="p-2 rounded hover:bg-red-600 transition-colors md:hidden cursor-pointer"
                 >
-                    {/* SVG de Cerrar */}
-                    <svg
+                  {/* SVG de Cerrar */}
+                  <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6"
                     fill="none"
                     viewBox="0 0 24 24"
                     stroke="currentColor"
                     strokeWidth={2}
-                    >
+                  >
                     <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M6 18L18 6M6 6l12 12"
                     />
-                    </svg>
+                  </svg>
                 </button>
-                )}
+              )}
             </div>
           </div>
 
           {/* Icono de Carrito */}
           <div className={`shrink-0 ${isSearchExpanded ? "hidden" : "block"}`}>
-            <Link
-              to="/cart"
-              className="text-xl hover:text-red-300 transition-colors ml-2 flex items-center whitespace-nowrap cursor-pointer"
-            >
-              🛒 Carrito ({Math.floor(cartCount)})
-            </Link>
+            {isAdminRoute ? (
+              <button
+                onClick={logout} // 👈 Llamada a la función logout
+                className="text-sm font-semibold hover:text-red-300 transition-colors ml-2 flex items-center whitespace-nowrap cursor-pointer px-3 py-1 border border-white rounded"
+              >
+                Cerrar Sesión
+              </button>
+            ) : (
+              // Si no estamos en Admin (o no estamos logueados), mostramos el Carrito
+              <Link
+                to="/cart"
+                className="text-xl hover:text-red-300 transition-colors ml-2 flex items-center whitespace-nowrap cursor-pointer"
+              >
+                🛒 Carrito ({Math.floor(cartCount)})
+              </Link>
+            )}
           </div>
         </div>
       </header>
 
       {/* 2. CARRUSEL DE IMÁGENES */}
-      {isHomePage && (
+      {isHomePage && !isAdminRoute && (
         <div className="w-full relative z-20">
           <ImageCarousel />
         </div>
       )}
 
       {/* 3. NAVEGACIÓN DE CATEGORÍAS (Se hace Sticky) */}
-      <section
-        className={`w-full transition-all duration-300 z-30 ${
-          isSticky
-            ? "fixed top-0 left-0 w-full z-50 animate-slide-down bg-white shadow-md"
-            : "relative"
-        }`}
-        aria-hidden={isSticky ? "false" : "true"}
-      >
-        <CategoryNavigator
-          categories={groupedCategories}
-          activeSlug={activeSlug}
-          isSidebarOpen={isSidebarOpen}
-          selectedPrincipalFromSidebar={selectedPrincipalFromSidebar}
-        />
-      </section>
+
+      {!isAdminRoute && (
+        <section
+          className={`w-full transition-all duration-300 z-30 ${
+            isSticky
+              ? "fixed top-0 left-0 w-full z-50 animate-slide-down bg-white shadow-md"
+              : "relative"
+          }`}
+          aria-hidden={isSticky ? "false" : "true"}
+        >
+          <CategoryNavigator
+            categories={groupedCategories}
+            activeSlug={activeSlug}
+            isSidebarOpen={isSidebarOpen}
+            selectedPrincipalFromSidebar={selectedPrincipalFromSidebar}
+          />
+        </section>
+      )}
 
       {/* Espacio Fantasma (mantener separación cuando la nav esté fija) */}
-      {isSticky && (
+      {isSticky && !isAdminRoute && (
         <div className="w-full" style={{ height: phantomHeight }}></div>
       )}
 

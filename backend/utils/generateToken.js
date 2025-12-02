@@ -4,8 +4,11 @@ import dotenv from 'dotenv'; // Para cargar variables de entorno
 
 dotenv.config(); // Cargar variables de entorno desde .env
 
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, {
+const generateToken = (user) => {
+  return jwt.sign({ 
+    id: user._id || user.id, 
+    role: user.role 
+  }, process.env.JWT_SECRET, {
     expiresIn: '30d', // El token expirará en 30 días
   });
 };

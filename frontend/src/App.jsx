@@ -16,6 +16,8 @@ import LoginPage from "./pages/LoginPage";
 import AdminDashboardPage from "./pages/admin/AdminDashboardPage";
 import ProductListPage from "./pages/admin/products/ProductListPage";
 import CategoryListPage from "./pages/admin/categories/CategoryListPage";
+import ProductFormPage from "./pages/admin/products/ProductFormPage";
+import CategoryFormPage from "./pages/admin/categories/CategoryFormPage";
 
 // Asegúrate de que este archivo exista: frontend/src/context/CartContext.jsx
 
@@ -44,13 +46,22 @@ const App = () => {
                     {/* AdminLayout contendrá el Sidebar y Main Area */}
                   </ProtectedRoute>
                 }
-              ></Route>
+              >
+                {/* Rutas Hijas de /admin */}
+                <Route index element={<AdminDashboardPage />} />
+                <Route path="products" element={<ProductListPage />} />
+                <Route path="products/new" element={<ProductFormPage />} />
+                <Route
+                  path="products/edit/:slug"
+                  element={<ProductFormPage />}
+                />
 
-              {/* Rutas Hijas de /admin */}
-              <Route index element={<AdminDashboardPage />} />
-              <Route path="products" element={<ProductListPage />} />
-              <Route path="categories" element={<CategoryListPage />} />
-              {/* Añadiremos los formularios de new/edit aquí más adelante */}
+                {/*Rutas de Categorias */}
+                <Route path="categories" element={<CategoryListPage />} />
+                <Route path="categories/new" element={<CategoryFormPage />} /> 
+                <Route path="categories/edit/:slug" element={<CategoryFormPage />} />
+                {/* Añadiremos los formularios de new/edit aquí más adelante */}
+              </Route>
             </Routes>
           </main>
           <Footer />
