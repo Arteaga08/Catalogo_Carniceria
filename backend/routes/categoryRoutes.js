@@ -13,16 +13,16 @@ import {
   validateCategory,
   validateCategorySlugParam,
   validateSlugParam,
-} from "../middleware/validationMiddleware.js"; // <-- IMPORTAR VALIDACIONES
+} from "../middleware/validationMiddleware.js";
 
 router
   .route("/")
   .post(protect, admin, validateCategory, createCategory) // Validar creación de categoría
-  .get(getCategories); // Rutas públicas
+  .get(getCategories);
 
 router
   .route("/:slug")
-  .get( getCategoryBySlug) // Validar slug al obtener
+  .get( getCategoryBySlug)
   .put(
     protect,
     admin,

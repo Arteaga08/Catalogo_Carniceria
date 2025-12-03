@@ -1083,15 +1083,29 @@ async function seedDB() {
 
     // 3. Construir array plano de categorías a insertar
     const categoriesToInsert = [];
-    for (const principal in categories) {
-      if (categories.hasOwnProperty(principal)) {
-        categories[principal].forEach((subCat) => {
+    for (const principalName in categories) {
+      if (categories.hasOwnProperty(principalName)) {
+        const principalSlug = principalName
+          .toLowerCase()
+          .replace(/[^a-z0-9]+/g, "-")
+          .replace(/^-*|-*$/g, "");
+
+        categoriesToInsert.push({
+          name: principalName,
+          slug: principalSlug,
+          categoryPrincipal: principalSlug,
+          parentSlug: null,
+          order: 99,
+        });
+
+        categories[principalName].forEach((subCat) => {
           categoriesToInsert.push({
             name: subCat.name,
             slug: subCat.slug,
             imageURL: subCat.iconURL || subCat.imageURL || subCat.image || null,
             order: subCat.order || 0,
-            categoryPrincipal: principal,
+            parentSlug: principalSlug,
+            categoryPrincipal: principalSlug,
           });
         });
       }
@@ -1100,6 +1114,7 @@ async function seedDB() {
     // Insertar categorías y productos (sigue usando insertMany para ellos)
     await Category.insertMany(categoriesToInsert);
     console.log("📂 Categorías importadas!".green.bold);
+
     await Product.insertMany(products);
     console.log("🥩 Productos importados!".green.bold);
 

@@ -10,7 +10,8 @@ const initialCategoryState = {
   name: "",
   slug: "", // El slug se generará o se usará para la edición
   description: "",
-  parentSlug: "", // Para sub-categorías
+  parentSlug: "",
+  categoryPrincipal: "",
 };
 
 const CategoryFormPage = () => {
@@ -32,12 +33,26 @@ const CategoryFormPage = () => {
       setLoading(true);
       setError(null);
 
+      console.log("Token actual:", token); // ¿Es NULL o es un string largo?
+      console.log("Header que se envía:", `Bearer ${token}`); // ¿Hay
+
       try {
         // Cargar todas las categorías
         const categoryRes = await axios.get(`${API_BASE_URL}/categories`, {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setAllCategories(categoryRes.data);
+
+        const apiData = categoryRes.data;
+        let categoriesArray = [];
+        if (Array.isArray(apiData)) {
+          categoriesArray = apiData;
+        } else if (typeof apiData === "object" && apiData !== null) {
+          // Manejo de respuesta agrupada
+          categoriesArray = Object.values(apiData)
+            .flat()
+            .filter((cat) => cat && cat.slug);
+        }
+        setAllCategories(categoriesArray);
 
         if (slug) {
           setIsEditMode(true);
@@ -48,13 +63,22 @@ const CategoryFormPage = () => {
               headers: { Authorization: `Bearer ${token}` },
             }
           );
-          setCategoryData(response.data);
+
+          const loadedData = response.data;
+          const parentSlug = loadedData.parentCategory?.slug || "";
+
+          setCategoryData({
+            ...loadedData,
+            parentSlug: parentSlug,
+            categoryPrincipal: loadedData.categoryPrincipal || loadedData.slug,
+          });
         } else {
           // Modo Creación
           setCategoryData(initialCategoryState);
           setIsEditMode(false);
         }
       } catch (err) {
+        console.error("Error fetching category data:", err);
         setError(
           `Error al cargar los datos: ${
             err.response?.data?.message || err.message
@@ -98,8 +122,33 @@ const CategoryFormPage = () => {
 
     // Si no estamos editando o si el slug no ha sido modificado manualmente, lo generamos
     if (!isEditMode || categoryData.slug === generateSlug(categoryData.name)) {
-      setCategoryData((prev) => ({ ...prev, slug: generateSlug(newName) }));
+      const newSlug = generateSlug(newName);
+      setCategoryData((prev) => ({
+        ...prev,
+        slug: newSlug,
+        // Si no hay parentSlug (es principal), la categoryPrincipal es ella misma (el newSlug)
+        categoryPrincipal: prev.parentSlug ? prev.categoryPrincipal : newSlug,
+      }));
     }
+  };
+
+  // 🟢 FUNCIÓN AGREGADA/CORREGIDA: Maneja el cambio de la categoría padre y categoryPrincipal
+  const handleParentSlugChange = (e) => {
+    const newParentSlug = e.target.value;
+
+    // Obtener la categoría padre seleccionada (si existe) para obtener su categoryPrincipal
+    const selectedParent = allCategories.find(
+      (cat) => cat.slug === newParentSlug
+    );
+
+    setCategoryData((prev) => ({
+      ...prev,
+      parentSlug: newParentSlug,
+      // Lógica de categoryPrincipal: Si tiene padre, usa el categoryPrincipal del padre. Si no tiene, usa su propio slug.
+      categoryPrincipal: selectedParent
+        ? selectedParent.categoryPrincipal
+        : prev.slug,
+    }));
   };
 
   const handleSubmit = async (e) => {
@@ -115,8 +164,19 @@ const CategoryFormPage = () => {
 
       const method = isEditMode ? axios.put : axios.post;
 
-      // Enviar datos
-      await method(url, categoryData, {
+      // 🟢 CORRECCIÓN: Crear dataToSend asegurando todos los campos
+      const dataToSend = {
+        name: categoryData.name,
+        slug: categoryData.slug,
+        description: categoryData.description || undefined, // Envía undefined si está vacío
+        // Si parentSlug es una cadena vacía, enviamos undefined para que el backend lo ignore.
+        parentSlug: categoryData.parentSlug || undefined,
+        // Aseguramos el envío de categoryPrincipal, que es requerido por Mongoose
+        categoryPrincipal: categoryData.categoryPrincipal || categoryData.slug,
+      };
+
+      // 🟢 CORRECCIÓN: Usar dataToSend en la llamada (NO categoryData)
+      await method(url, dataToSend, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -131,8 +191,12 @@ const CategoryFormPage = () => {
       ) {
         // Errores de validación
         const validationErrors = {};
+        // Usar 'path', 'param' o 'field' para obtener el nombre del campo del error.
         serverResponse.data.errors.forEach((err) => {
-          validationErrors[err.path] = err.msg;
+          const fieldName = err.path || err.param || err.field; // Cobertura más amplia
+          if (fieldName) {
+            validationErrors[fieldName] = err.msg;
+          }
         });
         setServerErrors(validationErrors);
         setError("Hay errores en el formulario. Por favor, revísalos.");
@@ -249,35 +313,57 @@ const CategoryFormPage = () => {
 
         {/* Categoría Padre (Para crear sub-categorías) */}
         <div>
+          {/* 🟢 INTERFAZ MEJORADA PARA ELEGIR NIVEL */}
           <label
             htmlFor="parentSlug"
             className="block text-sm font-medium text-gray-700"
           >
-            Categoría Padre (Para Sub-categoría)
+            Pertenencia de la Categoría
           </label>
+          <p className="text-xs text-gray-500 mb-2">
+            Elige si esta será una **Categoría Principal** (Nivel 1) o si debe
+            asignarse como **Subcategoría** a una principal existente (Nivel 2).
+          </p>
+
           <select
             id="parentSlug"
             name="parentSlug"
             value={categoryData.parentSlug}
-            onChange={handleInputChange}
+            onChange={handleParentSlugChange}
             className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
           >
-            <option value="">(Ninguna) - Categoría Principal</option>
-            {allCategories
-              // Filtramos la categoría actual para que no se pueda ser padre de sí misma
-              .filter((cat) => cat.slug !== categoryData.slug)
-              .map((cat) => (
-                <option key={cat.slug} value={cat.slug}>
-                  {cat.name} ({cat.slug})
-                </option>
-              ))}
+            {/* OPCIÓN CLAVE: Creación de Categoría de Nivel Superior */}
+            <option value="">
+              ✅ Crear como Categoría PRINCIPAL (Nivel 1)
+            </option>
+
+            <optgroup label="--- Añadir Subcategoría a Categoría Principal (Nivel 2) ---">
+              {allCategories
+                // 🛑 FILTRO REFORZADO: Aseguramos que parentSlug sea falsey (vacío, null, o undefined)
+                .filter((cat) => !cat.parentSlug)
+                // Y no se puede ser padre de sí misma
+                .filter((cat) => cat.slug !== categoryData.slug)
+                .map((cat) => (
+                  <option key={cat.slug} value={cat.slug}>
+                    Añadir a: {cat.name}
+                  </option>
+                ))}
+            </optgroup>
           </select>
+
           {serverErrors.parentSlug && (
             <p className="text-red-500 text-xs mt-1">
               {serverErrors.parentSlug}
             </p>
           )}
         </div>
+
+        {/* Campo oculto de categoryPrincipal para cumplir la validación de Mongoose */}
+        <input
+          type="hidden"
+          name="categoryPrincipal"
+          value={categoryData.categoryPrincipal}
+        />
 
         {/* Botones de Acción */}
         <div className="pt-4 border-t border-gray-200 flex justify-end space-x-4">

@@ -138,88 +138,33 @@ const Header = () => {
 
           {/* Lógica de Búsqueda */}
           {/* ⬅️ CLAVE: El div ahora contiene el formulario y los botones de control de expansión */}
-          <div
-            className={`flex items-center justify-end ${
-              isSearchExpanded
-                ? "w-full absolute inset-x-0 px-4"
-                : "md:flex-1 md:max-w-lg"
-            }`}
-          >
-            {/* ⬅️ Formulario de Búsqueda */}
-            <form
-              onSubmit={handleSearchSubmit}
-              className={`flex transition-all duration-300 ${
-                isSearchExpanded ? "flex-1" : "hidden md:flex flex-1"
+          {!isAdminRoute && (
+            <div
+              className={`flex items-center justify-end ${
+                isSearchExpanded
+                  ? "w-full absolute inset-x-0 px-4"
+                  : "md:flex-1 md:max-w-lg"
               }`}
             >
-              <input
-                type="text"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                placeholder="Buscar cortes..."
-                className="w-full p-2 rounded-l-md border-none focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-800"
-              />
-              <button
-                type="submit"
-                className="bg-red-500 hover:bg-red-600 p-2 text-white rounded-r-md transition-colors cursor-pointer"
-              >
-                {/* SVG de Búsqueda */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-            </form>
-
-            {/* ⬅️ Contenedor de Botones de Control Móvil */}
-            <div
-              className={`flex items-center ${isSearchExpanded ? "ml-2" : ""}`}
-            >
-              {/* Botón de expandir búsqueda en móvil (Lupa) */}
-              <button
-                onClick={() => setIsSearchExpanded(true)}
-                className={`p-2 rounded hover:bg-red-600 transition-colors md:hidden cursor-pointer ${
-                  isSearchExpanded ? "hidden" : "block"
+              {/* ⬅️ Formulario de Búsqueda */}
+              <form
+                onSubmit={handleSearchSubmit}
+                className={`flex transition-all duration-300 ${
+                  isSearchExpanded ? "flex-1" : "hidden md:flex flex-1"
                 }`}
               >
-                {/* SVG de Lupa (Solo se muestra cuando no está expandido) */}
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  className="h-6 w-6"
-                  fill="none"
-                  viewBox="0 0 24 24"
-                  stroke="currentColor"
-                  strokeWidth={2}
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-              </button>
-
-              {/* Botón de cerrar búsqueda en móvil (X) */}
-              {isSearchExpanded && (
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Buscar cortes..."
+                  className="w-full p-2 rounded-l-md border-none focus:outline-none focus:ring-2 focus:ring-red-500 bg-white text-gray-800"
+                />
                 <button
-                  onClick={() => {
-                    setIsSearchExpanded(false);
-                    setSearchTerm("");
-                  }}
-                  // ⬅️ CLAVE: ELIMINAMOS 'absolute right-4'. El flujo 'flex' lo posiciona.
-                  className="p-2 rounded hover:bg-red-600 transition-colors md:hidden cursor-pointer"
+                  type="submit"
+                  className="bg-red-500 hover:bg-red-600 p-2 text-white rounded-r-md transition-colors cursor-pointer"
                 >
-                  {/* SVG de Cerrar */}
+                  {/* SVG de Búsqueda */}
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-6 w-6"
@@ -231,14 +176,72 @@ const Header = () => {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
-                      d="M6 18L18 6M6 6l12 12"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
                     />
                   </svg>
                 </button>
-              )}
+              </form>
+
+              {/* ⬅️ Contenedor de Botones de Control Móvil */}
+              <div
+                className={`flex items-center ${
+                  isSearchExpanded ? "ml-2" : ""
+                }`}
+              >
+                {/* Botón de expandir búsqueda en móvil (Lupa) */}
+                <button
+                  onClick={() => setIsSearchExpanded(true)}
+                  className={`p-2 rounded hover:bg-red-600 transition-colors md:hidden cursor-pointer ${
+                    isSearchExpanded ? "hidden" : "block"
+                  }`}
+                >
+                  {/* SVG de Lupa (Solo se muestra cuando no está expandido) */}
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="h-6 w-6"
+                    fill="none"
+                    viewBox="0 0 24 24"
+                    stroke="currentColor"
+                    strokeWidth={2}
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
+                    />
+                  </svg>
+                </button>
+
+                {/* Botón de cerrar búsqueda en móvil (X) */}
+                {isSearchExpanded && (
+                  <button
+                    onClick={() => {
+                      setIsSearchExpanded(false);
+                      setSearchTerm("");
+                    }}
+                    className="p-2 rounded hover:bg-red-600 transition-colors md:hidden cursor-pointer"
+                  >
+                    {/* SVG de Cerrar */}
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      className="h-6 w-6"
+                      fill="none"
+                      viewBox="0 0 24 24"
+                      stroke="currentColor"
+                      strokeWidth={2}
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M6 18L18 6M6 6l12 12"
+                      />
+                    </svg>
+                  </button>
+                )}
+              </div>
             </div>
-          </div>
+          )}
 
           {/* Icono de Carrito */}
           <div className={`shrink-0 ${isSearchExpanded ? "hidden" : "block"}`}>

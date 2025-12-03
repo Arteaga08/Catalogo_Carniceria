@@ -11,6 +11,9 @@ const CategoryListPage = () => {
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
+  // 🟢 1. Nuevo estado para el término de búsqueda
+  const [searchTerm, setSearchTerm] = useState("");
+
   const navigate = useNavigate();
   const { token } = useAuth();
 
@@ -19,18 +22,30 @@ const CategoryListPage = () => {
     setLoading(true);
     setError(null);
     try {
-      // Usamos la ruta protegida que requiere el token
       const response = await axios.get(`${API_BASE_URL}/categories`, {
         headers: { Authorization: `Bearer ${token}` },
       });
-      // Filtramos para obtener solo las categorías principales (si tu backend lo permite)
-      // Si tu API retorna un array plano, simplemente lo usamos:
-      setCategories(response.data);
+
+      const categoryGroups = response.data;
+
+      if (typeof categoryGroups === "object" && categoryGroups !== null) {
+        // Aseguramos una lista plana de categorías para el listado de administración
+        const flatList = Object.values(categoryGroups)
+          .flat()
+          .filter((item) => item && item.slug);
+
+        setCategories(flatList);
+      } else {
+        console.error("Respuesta inesperada:", categoryGroups);
+        setError("Error en el formato de datos del servidor.");
+        setCategories([]);
+      }
     } catch (err) {
       console.error("Error al cargar categorías:", err);
       setError(
-        "No se pudieron cargar las categorías. Asegúrate de tener permisos."
+        err.response?.data?.message || "No se pudieron cargar las categorías."
       );
+      setCategories([]);
     } finally {
       setLoading(false);
     }
@@ -39,6 +54,11 @@ const CategoryListPage = () => {
   useEffect(() => {
     fetchCategories();
   }, [token]);
+
+  // 🟢 2. Función para manejar el cambio en el input
+  const handleSearchChange = (e) => {
+    setSearchTerm(e.target.value);
+  };
 
   // Función para eliminar una categoría
   const handleDeleteCategory = async (slug) => {
@@ -61,13 +81,19 @@ const CategoryListPage = () => {
       alert(`Categoría "${slug}" eliminada con éxito.`);
     } catch (err) {
       console.error("Error al eliminar:", err);
-      // Muestra un mensaje de error más específico si la categoría tiene productos asociados
       const message =
         err.response?.data?.message ||
         "Ocurrió un error inesperado al eliminar.";
       setError(`Error al eliminar: ${message}`);
     }
   };
+
+  // 🟢 3. Lógica de Filtrado Local
+  const filteredCategories = categories.filter(
+    (category) =>
+      category.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      category.slug.toLowerCase().includes(searchTerm.toLowerCase())
+  );
 
   if (loading) {
     return (
@@ -81,7 +107,8 @@ const CategoryListPage = () => {
     <div className="p-6">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-3xl font-bold text-gray-800">
-          🏷️ Gestión de Categorías ({categories.length})
+          🏷️ Gestión de Categorías ({filteredCategories.length} de{" "}
+          {categories.length})
         </h1>
         <button
           onClick={() => navigate("/admin/categories/new")}
@@ -90,6 +117,24 @@ const CategoryListPage = () => {
           <FaPlus className="w-4 h-4 mr-2" /> Nueva Categoría
         </button>
       </div>
+
+      {/* 🟢 4. Input de Búsqueda */}
+      <div className="mb-6 flex items-center">
+        <div className="relative w-full max-w-lg">
+          <input
+            type="text"
+            placeholder="Buscar categoría por Nombre o Slug..."
+            value={searchTerm}
+            onChange={handleSearchChange}
+            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
+          />
+          {/* Icono de Lupa */}
+          <span className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400">
+            🔍
+          </span>
+        </div>
+      </div>
+      {/* 🛑 Fin Input de Búsqueda */}
 
       {error && (
         <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
@@ -123,7 +168,8 @@ const CategoryListPage = () => {
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {categories.map((category) => (
+              {/* 🟢 Usar filteredCategories para mapear */}
+              {filteredCategories.map((category) => (
                 <tr key={category.slug} className="hover:bg-gray-50">
                   {/* Nombre */}
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -165,6 +211,18 @@ const CategoryListPage = () => {
                   </td>
                 </tr>
               ))}
+              {/* Mensaje si no hay resultados después de filtrar */}
+              {filteredCategories.length === 0 && searchTerm.length > 0 && (
+                <tr>
+                  <td
+                    colSpan="4"
+                    className="text-center py-4 text-gray-500 bg-white border-t"
+                  >
+                    No se encontraron categorías que coincidan con "{searchTerm}
+                    ".
+                  </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>

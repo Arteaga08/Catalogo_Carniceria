@@ -25,16 +25,9 @@ const AdminLayout = () => {
 
       {/* 3. SIDEBAR RESPONSIVO (Oculto en móvil por defecto, visible en LG) */}
       <aside
-        className={`
-          fixed inset-y-0 left-0 z-50 transform 
-          bg-gray-800 text-white w-64 flex flex-col transition-transform duration-300 ease-in-out
-          
-          // Lógica Móvil: Muestra (translate-x-0) u Oculta (-translate-x-full)
-          ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"} 
-          
-          // Lógica Desktop: Siempre visible en pantallas grandes (lg)
-          lg:translate-x-0 lg:static lg:shadow-none 
-        `}
+        className={`fixed inset-y-0 left-0 z-50 transform bg-gray-800 text-white w-64 flex flex-col transition-transform duration-300 ease-in-out ${
+          isSidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } lg:translate-x-0 lg:static lg:shadow-none`}
       >
         <div className="p-4 text-2xl font-bold border-b border-gray-700">
           🥩 Admin Carnicería
