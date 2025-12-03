@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProductBySlug } from "../api/apiService";
 import { useCart } from "../context/CartCotext";
+import { getAbsoluteImageUrl } from "../api/apiService";
 
 const ProductDetailPage = () => {
   const [product, setProduct] = useState(null);
@@ -121,14 +122,6 @@ const ProductDetailPage = () => {
   }, [quantity, decimals]);
 
   const handleAddToCart = () => {
-    // ⬅️ CONSOLE LOG PARA DEBUG:
-    console.log("--- DEBUG CARGA CARRITO ---");
-    console.log("Producto isIntegerUnit (Backend):", product.isIntegerUnit);
-    console.log("Lógica Evaluada (isInteger):", isInteger);
-    console.log("Cantidad enviada:", quantity);
-    console.log("---------------------------");
-    console.log("DEBUG DETALLE: Objeto Producto a Agregar", product);
-
     // Usamos productUnitLabel para el mensaje de alerta
     if (!product || quantity < minVal) {
       // ⚠️ Usamos una alerta temporal, idealmente se usaría un modal
@@ -204,9 +197,7 @@ const ProductDetailPage = () => {
 
   // --- Renderizado del Detalle del Producto (si product existe) ---
 
-  const imageUrl =
-    product.imageURL ||
-    "https://via.placeholder.com/600x400?text=Imagen+No+Disponible";
+  const imageUrl = getAbsoluteImageUrl(product.imageURL);
 
   const rawCategorySlug = product.categorySlug || product.category;
 

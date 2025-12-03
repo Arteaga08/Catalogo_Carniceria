@@ -1,51 +1,52 @@
-import express from 'express';
-import dotenv from 'dotenv';
-import cors from 'cors';
-import path from 'path';
+import express from "express";
+import dotenv from "dotenv";
+import cors from "cors";
+import path from "path";
+import { fileURLToPath } from "url";
 
-import connectDB from './config/db.js';
-import { notFound, errorHandler } from './middleware/errorMiddleware.js';
+import connectDB from "./config/db.js";
+import { notFound, errorHandler } from "./middleware/errorMiddleware.js";
 
-import categoryRoutes from './routes/categoryRoutes.js';
-import productRoutes from "./routes/productRoutes.js"
-import userRoute from "./routes/userRoutes.js"
-import uploadRoutes from "./routes/uploadRoutes.js"
-
+import categoryRoutes from "./routes/categoryRoutes.js";
+import productRoutes from "./routes/productRoutes.js";
+import userRoute from "./routes/userRoutes.js";
+import uploadRoutes from "./routes/uploadRoutes.js";
 
 // Cargar variables de entorno
 dotenv.config();
 
 // Inicializar la Conexión a MongoDB
-connectDB(); 
+connectDB();
 
 const app = express();
 const PORT = process.env.PORT || 5001;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // MIDDLEWARE
 app.use(cors()); // **IMPORTANTE: Resuelve el 403**
 app.use(express.json());
 
 // RUTAS DE LA API
-app.get('/', (req, res) => {
-    res.send('API de Carnicería activa. Bienvenido al backend MERN.');
+app.get("/", (req, res) => {
+  res.send("API de Carnicería activa. Bienvenido al backend MERN.");
 });
 
 // Implementación de la ruta
-app.use('/api/categories', categoryRoutes); 
-app.use('/api/products', productRoutes); 
-app.use("/api/users", userRoute)
-app.use('/api/upload', uploadRoutes);
+app.use("/api/categories", categoryRoutes);
+app.use("/api/products", productRoutes);
+app.use("/api/users", userRoute);
+app.use("/api/upload", uploadRoutes);
 
 //Img Upload
-const __dirname = path.resolve();
-app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
+app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
 
 // Middlewares de manejo de errores.
 app.use(notFound);
 app.use(errorHandler);
 
-
 // LISTENER
 app.listen(PORT, () => {
-    console.log(`Server is running on port: ${PORT}`);
+  console.log(`Server is running on port: ${PORT}`);
 });

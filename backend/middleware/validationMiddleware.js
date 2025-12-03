@@ -1,6 +1,5 @@
-// backend/middleware/validationMiddleware.js
 import { body, param, query, validationResult } from "express-validator";
-import Category from "../models/categoryModel.js"; // Para validar existencia de categoría
+import Category from "../models/categoryModel.js";
 import User from "../models/userModel.js";
 import Product from "../models/ProductModel.js";
 
@@ -8,7 +7,7 @@ import Product from "../models/ProductModel.js";
 const handleValidationErrors = (req, res, next) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    const errorMessages = errors.array(); // Captura los errores en una variable
+    const errorMessages = errors.array();
     console.error("Validation Errors Detected:", errorMessages);
 
     if (res.headersSent) {
@@ -19,20 +18,18 @@ const handleValidationErrors = (req, res, next) => {
     }
 
     return res.status(400).json({
-      message: "Validation Failed", // Un mensaje general para el cliente
+      message: "Validation Failed",
       errors: errorMessages.map((err) => ({
-        // Mapea cada error para un formato más limpio si lo deseas, o envía el array crudo
         message: err.msg,
         field: err.path,
         value: err.value,
       })),
-      // O simplemente: errors: errorMessages, // Si quieres el array de errores tal cual viene de express-validator
     });
   }
   next();
 };
 
-// --- Validaciones para Usuarios ---
+// --- Validaciones para Usuarios (Sin cambios) ---
 
 const validateRegisterUser = [
   body("name")
@@ -114,7 +111,7 @@ const validateUpdateUser = [
   handleValidationErrors,
 ];
 
-// --- Validaciones para Categorías ---
+// --- Validaciones para Categorías (Sin cambios en este bloque) ---
 
 const validateCategory = [
   body("name")
@@ -144,13 +141,11 @@ const validateCategory = [
     .trim()
     .isLength({ min: 5 })
     .withMessage("La descripción debe tener al menos 5 caracteres"),
-  // <<<<<<<<<<<<<<<<<<<< CORRECCIÓN AQUÍ >>>>>>>>>>>>>>>>>>>>>>
   body("categoryPrincipal")
     .optional()
     .trim()
     .notEmpty()
-    .withMessage("La categoría principal es requerida"), // Ahora es requerida
-  // <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<< >>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>
+    .withMessage("La categoría principal es requerida"),
   body("order")
     .optional()
     .isInt({ min: 0 })
@@ -183,11 +178,12 @@ const validateSlugParam = [
   handleValidationErrors,
 ];
 
-// --- Validaciones para Productos ---
+// ------------------------------------
+// --- Validaciones para Productos (MODIFICADO) ---
+// ------------------------------------
 
 const validateProduct = [
   body("name")
-    .optional()
     .trim()
     .notEmpty()
     .withMessage("El nombre del producto es requerido")
@@ -210,26 +206,19 @@ const validateProduct = [
       }
     }),
   body("description")
-    .optional()
     .trim()
     .notEmpty()
     .withMessage("La descripción del producto es requerida")
     .isLength({ min: 10 })
     .withMessage("La descripción debe tener al menos 10 caracteres"),
   body("price")
-    .optional()
     .isFloat({ min: 0.01 })
     .withMessage("El precio debe ser un número positivo"),
   body("stock")
-    .optional()
     .isInt({ min: 0 })
     .withMessage("El stock debe ser un número entero no negativo"),
-  body("imageURL")
-    .optional() // Permite que no se envíe al crear, pero si se envía, validarlo
-    .isURL()
-    .withMessage("La URL de la imagen debe ser una URL válida"),
+
   body("categorySlug")
-    .optional()
     .notEmpty()
     .withMessage("El slug de la categoría es requerido")
     .custom(async (value) => {
@@ -238,35 +227,18 @@ const validateProduct = [
         throw new Error("La categoría especificada no existe");
       }
     }),
-  body("variations")
-    .optional()
-    .isArray()
-    .withMessage("Las variaciones deben ser un array")
-    .notEmpty()
-    .withMessage("Debe haber al menos una variación"),
-  body("variations.*.unitName") // Validar cada elemento dentro del array de variaciones
-    .trim()
-    .notEmpty()
-    .withMessage("El nombre de la unidad de variación es requerido"),
-  body("variations.*.price")
-    .isFloat({ min: 0.01 })
-    .withMessage("El precio de la variación debe ser un número positivo"),
-  body("variations.*.unitReference")
-    .trim()
-    .notEmpty()
-    .withMessage("La referencia de la unidad de variación es requerida"),
-  body("variations.*.approxWeightGrams")
-    .isInt({ min: 1 })
-    .withMessage(
-      "El peso aproximado en gramos debe ser un número entero positivo"
-    ),
-  body("variations.*.isIntegerUnit")
-    .isBoolean()
-    .withMessage("isIntegerUnit debe ser un valor booleano"),
+
+  // 🟢 AÑADIDA: Nueva validación para el tipo de unidad
+  body("unitType")
+    .isIn(["kg", "unit"])
+    .withMessage("El tipo de unidad debe ser 'kg' o 'unit'"),
+
+  // 🛑 ELIMINADAS: TODAS las validaciones de 'variations'
+
   body("isAvailable")
-    .optional()
     .isBoolean()
     .withMessage("isAvailable debe ser un valor booleano"),
+
   handleValidationErrors,
 ];
 

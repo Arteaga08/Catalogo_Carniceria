@@ -1,6 +1,7 @@
 import mongoose from "mongoose";
 
-const variationSchema = mongoose.Schema({
+{
+  /*const variationSchema = mongoose.Schema({
   unitName: {
     type: String,
     required: true,
@@ -22,7 +23,8 @@ const variationSchema = mongoose.Schema({
     type: Boolean,
     default: false, // false = Permite decimales (ej. 1.5 Kg). true = Solo enteros (ej. 2 Piezas)
   },
-});
+}); */
+}
 
 // 2. Definición del Esquema del Producto
 const productSchema = mongoose.Schema(
@@ -42,18 +44,32 @@ const productSchema = mongoose.Schema(
       required: true,
     },
     imageURL: {
+      // 🟢 AJUSTE: Lo hacemos no requerido para permitir que Multer lo guarde después.
       type: String,
-      required: true,
+      required: false,
     },
-    // Enlaza el producto a su subcategoría por el slug
     categorySlug: {
       type: String,
       required: true,
     },
 
-    // ⬅️ CAMBIO CLAVE: Nueva propiedad para control de decimales
-
-    variations: [variationSchema], // Usa el sub-esquema aquí
+    // 🟢 CAMPOS PLANOS REQUERIDOS (¡Faltaban en el esquema!)
+    price: {
+      type: Number,
+      required: true,
+      default: 0.0,
+    },
+    stock: {
+      type: Number,
+      required: true,
+      default: 0,
+    },
+    unitType: {
+      type: String,
+      required: true,
+      enum: ["kg", "unit"],
+    },
+    // 🛑 ELIMINADA la propiedad 'variations' si existía.
 
     // Campos de control de plantilla
     isAvailable: {

@@ -1,7 +1,26 @@
 // Archivo: frontend/src/api/apiService.js
 import axios from "axios";
 // ... (asegúrate de que tu URL base sea correcta)
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+const API_BASE_URL_FILES =
+  import.meta.env.VITE_API_BASE || "http://localhost:5001";
+//const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
+// 🟢 2. URL PARA PETICIONES DE LA API (con /api)
+const API_URL = `${API_BASE_URL_FILES}/api`;
+
+// 3. NUEVA FUNCIÓN DE UTILIDAD: Obtener URL absoluta de la imagen
+export const getAbsoluteImageUrl = (relativePath) => {
+  if (!relativePath) {
+    return "https://via.placeholder.com/600x400?text=Imagen+No+Disponible";
+  }
+
+  // Aseguramos que la ruta no comience con un '/' para evitar un doble slash (ej: //uploads/...)
+  const cleanPath = relativePath.startsWith("/")
+    ? relativePath.substring(1)
+    : relativePath;
+
+  // Concatenamos la URL base del servidor (ej: http://localhost:5001) con la ruta de la imagen (ej: uploads/products/...)
+  return `${API_BASE_URL_FILES}/${cleanPath}`;
+};
 
 // 1. MODIFICAR fetchProducts para aceptar un slug de subcategoría opcional
 export const fetchProducts = async (
@@ -9,7 +28,7 @@ export const fetchProducts = async (
   searchTerm = null,
   limit = null
 ) => {
-  let url = "/api/products";
+  let url = `${API_URL}/products`;
   const params = new URLSearchParams();
 
   // Lógica de filtrado por categoría

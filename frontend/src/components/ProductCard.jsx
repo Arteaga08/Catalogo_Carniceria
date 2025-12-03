@@ -1,46 +1,61 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartCotext";
+// ⬅️ ¡Ya está importada!
+import { getAbsoluteImageUrl } from "../api/apiService";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
-  // 1. Determinar la variación por defecto
-  // Usaremos la primera variación disponible. Si no hay, verificamos si hay un precio base simple.
-  let defaultVariation = null;
+  // 1. Determinar la fuente del Precio/Unidad
+  // Los productos creados recientemente tendrán campos planos (price, unitType).
+  // Los productos antiguos pueden tener 'variations'.
+  let priceSource = null;
 
-  if (product.variations && product.variations.length > 0) {
-    defaultVariation = product.variations[0];
-  } else if (product.price) {
-    // Si no hay array de variaciones pero sí hay precio, creamos un objeto simple temporal
-    defaultVariation = {
+  // 🟢 LÓGICA CORREGIDA: Priorizar los nuevos campos planos
+  if (product.price && product.unitType) {
+    // Si tiene campos planos (producto NUEVO/ACTUALIZADO)
+    priceSource = {
       price: product.price,
-      unitLabel: "Unidad",
+      unitDisplay: product.unitType,
       _id: product._id, // Usamos el ID del producto como ID de variación simple
     };
+  } else if (product.variations && product.variations.length > 0) {
+    // Si tiene el antiguo array de variaciones (producto ANTIGUO)
+    const defaultVariation = product.variations[0];
+    priceSource = {
+      price: defaultVariation.price,
+      unitDisplay:
+        defaultVariation.unitName || defaultVariation.unitReference || "Unidad",
+      _id: defaultVariation._id,
+    };
   }
+  // 🛑 El producto que causaba el error ("Pollo de prubea") probablemente caía aquí
+  // porque no tenía ni 'price' plano ni 'variations'.
 
   // Si no hay datos de precio ni variación, no renderizamos la tarjeta (o mostramos un error)
-  if (!defaultVariation) {
-    console.error(`Producto sin precio o variación definida: ${product.name}`);
-    return null;
+  if (!priceSource) {
+    console.error(`Producto sin precio o unidad válida: ${product.name}`);
+    return null; // No renderiza la tarjeta si no tiene precio
   }
 
   // 2. Definir variables para el Display
-  const priceDisplay = defaultVariation.price || 0;
-  const unitDisplay =
-    defaultVariation.unitLabel || defaultVariation.unitReference || "Unidad";
+  // Usamos protección para evitar NaN en el display
+  const priceDisplay = priceSource.price || 0;
+  const unitDisplay = priceSource.unitDisplay || "Unidad";
 
   // 3. Handler para añadir el producto al carrito
   const handleAddToCart = (e) => {
-    // Detiene la propagación del evento para que NO se active el <Link> padre.
     e.preventDefault();
     e.stopPropagation();
 
-    // Llamamos a addToCart con el producto, la variación por defecto y la cantidad (1)
-    // El CartContext ya sabe cómo usar el 'defaultVariation' para crear el lineItemId
-    addToCart(product, defaultVariation, 1);
+    // Cuando llamamos a addToCart, necesitamos pasar la información necesaria para el carrito.
+    // Usaremos 'priceSource' para simular la variación.
+    addToCart(product, priceSource, 1);
   };
+
+  // 🟢 CONSTRUCCIÓN DE LA URL ABSOLUTA
+  const imageUrl = getAbsoluteImageUrl(product.imageURL);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
@@ -49,9 +64,10 @@ const ProductCard = ({ product }) => {
         {/* Espacio para la imagen del producto */}
         <div className="h-48 overflow-hidden">
           <img
+            // ⬅️ ¡CORRECCIÓN APLICADA AQUÍ!
             src={
-              product.imageURL ||
-              "https://via.placeholder.com/400x300?text=Corte"
+              // Usamos la variable imageUrl, que llama a getAbsoluteImageUrl
+              imageUrl
             }
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
@@ -61,7 +77,7 @@ const ProductCard = ({ product }) => {
         <div className="p-4 pb-2">
           {/* Categoría o Subcategoría */}
           <p className="text-xs font-semibold text-red-600 uppercase mb-1">
-            {product.category || "General"}
+            {product.categorySlug || "General"}
           </p>
 
           {/* Nombre del Producto */}

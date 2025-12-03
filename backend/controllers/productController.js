@@ -1,5 +1,6 @@
 import Product from "../models/ProductModel.js";
-import Category from "../models/categoryModel.js"; 
+import Category from "../models/categoryModel.js";
+import slugify from "slugify";
 
 // --- Controladores para Obtener Productos (Tus funciones GET existentes, ligeramente ajustadas) ---
 
@@ -11,6 +12,8 @@ const getProducts = async (req, res) => {
 
   try {
     let query = {};
+
+    query.isAvailable = true;
 
     if (categorySlugQuery) {
       // Usamos el parámetro de query para filtrar por categorySlug
@@ -65,7 +68,8 @@ const getProductsByCategory = async (req, res) => {
     const { categorySlug } = req.params; // Usamos categorySlug del parámetro de la URL
 
     const products = await Product.find({
-      categorySlug: { $regex: new RegExp(categorySlug, "i") }, // Filtramos por categorySlug
+      categorySlug: { $regex: new RegExp(categorySlug, "i") },
+      isAvailable: true,
     });
 
     if (products.length === 0) {
@@ -117,15 +121,20 @@ const searchProducts = async (req, res) => {
 const createProduct = async (req, res) => {
   const {
     name,
-    slug,
     price,
     stock,
     description,
-    imageURL,
+
     categorySlug,
-    variations,
+    unitType,
     isAvailable,
   } = req.body;
+
+  // 2. 🟢 Obtener la ruta de la imagen subida por Multer
+  const imagePath = req.file ? req.file.path.replace(/\\/g, "/") : undefined;
+
+  // 3. 🟢 Generar el slug automáticamente a partir del nombre
+  const productSlug = slugify(name, { lower: true, strict: true });
 
   try {
     // Validar que el categorySlug exista en la colección de categorías
@@ -137,24 +146,33 @@ const createProduct = async (req, res) => {
       );
     }
 
+    const productExists = await Product.findOne({ slug: productSlug });
+    if (productExists) {
+      res.status(400);
+      throw new Error(
+        "Ya existe un producto con este nombre. Por favor, cambia el nombre."
+      );
+    }
+
     const product = new Product({
       name: name,
-      slug: slug,
+      slug: productSlug,
       description: description,
-      imageURL: imageURL,
+      imageURL: imagePath,
       categorySlug: categorySlug,
-      variations: variations,
-      isAvailable: isAvailable ?? true,
-      // Nota: Tu ProductModel no tiene un campo 'user' para el creador. Si lo necesitas,
-      // añádelo a ProductModel y descomenta la línea 'user: req.user._id,'
-      // user: req.user._id,
+      price: parseFloat(price),
+      stock: parseInt(stock),
+      unitType: unitType,
+      isAvailable: isAvailable == "true",
     });
 
     const createdProduct = await product.save();
     res.status(201).json(createdProduct);
   } catch (error) {
     console.error("Error al crear producto:", error);
-    res.status(error.statusCode || 500).json({
+    const status =
+      error.statusCode || error.name === "ValidationError" ? 400 : 500;
+    res.status(status).json({
       message: error.message || "Error interno del servidor al crear producto.",
     });
   }
