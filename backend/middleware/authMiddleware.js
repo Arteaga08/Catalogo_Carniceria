@@ -6,6 +6,7 @@ import User from "../models/userModel.js"; // Importamos el modelo de usuario
 // Middleware para proteger rutas (verifica la autenticación del usuario)
 const protect = asyncHandler(async (req, res, next) => {
   let token;
+  console.log("🛡️ PROTECT MIDDLEWARE INICIADO");
 
   // Comprobamos si hay un token en el encabezado de autorización
   if (
@@ -20,10 +21,20 @@ const protect = asyncHandler(async (req, res, next) => {
 
       // Verificamos el token con la clave secreta
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
-      console.log("Token decodificado:", decoded);
+      console.log("✅ Token Decodificado:", decoded);
+
+      const userId = decoded.userId || decoded.id || decoded._id;
+
+      if (!userId) {
+        console.error(
+          "❌ Error: El token no tiene campo 'id', 'userId' o '_id'"
+        );
+        res.status(401);
+        throw new Error("Token mal formado: falta ID de usuario");
+      }
 
       // Buscamos al usuario por el ID decodificado (excluyendo la contraseña)
-      req.user = await User.findById(decoded.id).select("-password");
+      req.user = await User.findById(userId).select("-password");
 
       if (!req.user) {
         // <-- Añadimos un chequeo por si el usuario no existe
@@ -36,8 +47,11 @@ const protect = asyncHandler(async (req, res, next) => {
       console.error("ERROR EN VERIFICACIÓN DE TOKEN:"); // <-- Etiqueta para el error
       console.error("Tipo de error:", error.name); // <-- NUEVO: Nombre del tipo de error (ej. TokenExpiredError)
       console.error("Mensaje de error:", error.message); // <-- NUEVO: Mensaje específico del error JWT
-      res.status(401);
-      throw new Error("No autorizado, token fallido. " + error.message); // <-- Mensaje más descriptivo
+
+      res.status(401).json({
+        message: "No autorizado. Token inválido o expirado.",
+        details: error.message, // Enviamos el detalle del error JWT
+      });
     }
   }
 

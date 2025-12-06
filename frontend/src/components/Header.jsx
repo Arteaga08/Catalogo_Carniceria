@@ -36,6 +36,16 @@ const Header = () => {
   const activeSlug = getActiveCategorySlug();
 
   const navigate = useNavigate();
+  const formatCategoryName = (slug) => {
+    if (!slug) return "";
+
+    if (slug === "carnicer-a") {
+      return "Carnicería";
+    }
+    // Lógica genérica (para cortes-parrilleros -> Cortes parrilleros)
+    let formattedName = slug.replace(/-/g, " ");
+    return formattedName.charAt(0).toUpperCase() + formattedName.slice(1);
+  };
 
   // Carga de categorías
   useEffect(() => {
@@ -288,6 +298,7 @@ const Header = () => {
             activeSlug={activeSlug}
             isSidebarOpen={isSidebarOpen}
             selectedPrincipalFromSidebar={selectedPrincipalFromSidebar}
+            formatName={formatCategoryName}
           />
         </section>
       )}
@@ -303,6 +314,7 @@ const Header = () => {
         categories={groupedCategories}
         handleLinkClick={handleLinkClick}
         onSelectPrincipalCategory={setSelectedPrincipalFromSidebar}
+        formatName={formatCategoryName}
       />
     </>
   );

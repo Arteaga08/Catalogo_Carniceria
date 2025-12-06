@@ -80,14 +80,18 @@ export const fetchProductBySlug = async (slug) => {
 // 3. fetchCategories permanece igual
 export const fetchCategories = async () => {
   try {
-    const response = await fetch(`${API_URL}/categories`);
+    // 🟢 CORRECCIÓN: Usar axios.get en lugar de fetch.
+    const response = await axios.get(`${API_URL}/categories`);
 
-    if (!response.ok) {
-      throw new Error(`Error al obtener categorías: ${response.statusText}`);
-    }
+    // Al usar axios, el payload JSON está en response.data
+    const data = response.data;
 
-    const data = await response.json();
-    return data; // Debería devolver el objeto de categorías agrupadas
+    console.log("Categorías cargadas:", data); // Descomenta temporalmente para verificar la estructura
+
+    // Si tu backend devuelve las categorías anidadas, por ejemplo: { categories: [...] },
+    // podrías necesitar retornar data.categories o aplanar aquí.
+    // Por ahora, asumimos que devuelve el array directo.
+    return data;
   } catch (error) {
     console.error("Error en fetchCategories:", error);
     throw error;

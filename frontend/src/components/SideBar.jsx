@@ -4,7 +4,14 @@ import React, { useState } from "react"; // 👈 Necesita useState
 import { Link } from "react-router-dom";
 
 // El nombre de la función componente DEBE coincidir con el nombre del archivo
-const SideBar = ({ isOpen, onClose, categories, handleLinkClick, onSelectPrincipalCategory }) => {
+const SideBar = ({
+  isOpen,
+  onClose,
+  categories,
+  handleLinkClick,
+  onSelectPrincipalCategory,
+  formatName,
+}) => {
   // Estado para controlar qué categoría principal está abierta (estilo acordeón)
   const [openCategory, setOpenCategory] = useState(null);
 
@@ -55,7 +62,7 @@ const SideBar = ({ isOpen, onClose, categories, handleLinkClick, onSelectPrincip
             }}
             className="block text-xl font-extrabold text-gray-900 py-3 border-b-2 border-gray-100 hover:text-red-700 transition-colors"
           >
-            INICIO
+            Inicio
           </Link>
 
           {principalCategories.map((principalName) => (
@@ -65,7 +72,9 @@ const SideBar = ({ isOpen, onClose, categories, handleLinkClick, onSelectPrincip
                 onClick={() => toggleCategory(principalName)} // 👈 Lógica del acordeón
                 className="w-full py-3 text-xl font-extrabold text-left text-gray-900 flex justify-between items-center hover:text-red-700 transition-colors"
               >
-                {principalName}
+                {/* 🟢 CORRECCIÓN: Aplicar la función de formato aquí */}
+                {formatName(principalName)}
+
                 {/* Icono + o - */}
                 <span className="text-xl font-normal">
                   {openCategory === principalName ? "–" : "+"}

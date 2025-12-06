@@ -1,457 +1,453 @@
-// src/pages/admin/products/ProductFormPage.jsx
-import React, { useState, useEffect, useCallback } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
+// 🟢 1. IMPORTAR fetchCategories para obtener la lista
+import { fetchProductBySlug, fetchCategories } from "../../../api/apiService";
 import { useAuth } from "../../../context/authContext";
+import slugify from "slugify";
 
-// URL base de tu backend
-const API_BASE_URL = "http://localhost:5001/api";
+// Define la URL de tu API para que sea consistente
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5001/api";
 
-// Estado inicial del producto para creación (LIMPIO)
-const initialProductState = {
+const initialProductData = {
   name: "",
+  slug: "",
   description: "",
-  price: 0.0,
-  stock: 0,
-  imageURL: "", // Usado solo para previsualización local o URL de edición
+  price: "",
+  stock: "",
   categorySlug: "",
   unitType: "kg",
   isAvailable: true,
 };
 
 const ProductFormPage = () => {
+  const { token, isAuthenticated, logout } = useAuth();
+
+  const [productData, setProductData] = useState(initialProductData);
+  const [categories, setCategories] = useState([]); // 🟢 2. NUEVO ESTADO PARA CATEGORÍAS
+  const [imageFile, setImageFile] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [isEditMode, setIsEditMode] = useState(false);
+
   const { slug } = useParams();
   const navigate = useNavigate();
-  const { token } = useAuth();
 
-  const [productData, setProductData] = useState(initialProductState);
-  const [categories, setCategories] = useState([]);
-  const [isEditMode, setIsEditMode] = useState(false);
-  const [loading, setLoading] = useState(false);
-  const [imageFile, setImageFile] = useState(null); // Para el archivo binario
-  const [error, setError] = useState(null);
-  const [serverErrors, setServerErrors] = useState({});
-
-  // 1. Cargar Categorías (CON CORRECCIÓN DE FORMATO)
+  // --- useEffect para cargar datos del producto Y CATEGORÍAS ---
   useEffect(() => {
-    const fetchCategories = async () => {
+    // 🟢 FUNCIÓN PARA CARGAR CATEGORÍAS con manejo de estructura anidada
+    const loadCategories = async () => {
       try {
-        const response = await axios.get(`${API_BASE_URL}/categories`);
+        const data = await fetchCategories();
 
-        // Transformamos el objeto anidado en un array plano
-        const categoryGroups = response.data;
-        if (typeof categoryGroups === "object" && categoryGroups !== null) {
-          const flatList = Object.values(categoryGroups)
-            .flat()
-            .filter((item) => item && item.slug);
-          setCategories(flatList);
+        let allSubcategories = [];
+
+        // Verifica que 'data' sea un objeto (lo que sabemos que es)
+        if (data && typeof data === "object" && !Array.isArray(data)) {
+          // 1. Obtener todas las claves principales (ej: carnicer-a, carnitas)
+          const mainCategorySlugs = Object.keys(data);
+
+          // 2. Iterar sobre cada clave principal
+          mainCategorySlugs.forEach((key) => {
+            const subcategoriesArray = data[key];
+
+            // 3. Verificar que el valor sea un array de subcategorías
+            if (Array.isArray(subcategoriesArray)) {
+              // 4. Concatenar (agregar) todos los arrays de subcategorías a la lista plana
+              // Las subcategorías son los elementos que contienen el slug y name que necesitamos.
+              allSubcategories = allSubcategories.concat(subcategoriesArray);
+            }
+          });
+        }
+
+        // 5. Establecer el estado con la lista plana de subcategorías
+        if (Array.isArray(allSubcategories) && allSubcategories.length > 0) {
+          setCategories(allSubcategories);
         } else {
-          setCategories([]);
+          console.error(
+            "La respuesta de /api/categories no contiene subcategorías válidas. Estructura recibida:",
+            data
+          );
+          setError(
+            "Error: La API de categorías no devolvió subcategorías para el selector."
+          );
         }
       } catch (err) {
         console.error("Error al cargar categorías:", err);
-        setError("Error al cargar las categorías. Intenta recargar la página.");
-        setCategories([]);
+        setError("No se pudieron cargar las categorías.");
       }
     };
-    fetchCategories();
-  }, []);
 
-  // 2. Cargar Producto Existente (Modo Edición - LIMPIO)
-  useEffect(() => {
+    loadCategories(); // 🟢 LLAMAR A LA CARGA DE CATEGORÍAS
+
+    // Lógica existente para cargar datos del producto
     if (slug) {
       setIsEditMode(true);
       setLoading(true);
-      const fetchProduct = async () => {
+      const loadProduct = async () => {
         try {
-          const response = await axios.get(`${API_BASE_URL}/products/${slug}`, {
-            headers: { Authorization: `Bearer ${token}` },
-          });
-
-          // Mapear los datos del producto a nuestro estado
-          const data = response.data;
-          setProductData({
-            name: data.name || "",
-            description: data.description || "",
-            price: data.price || 0.01,
-            stock: data.stock || 0,
-            imageURL: data.imageURL || "", // Carga la URL existente
-            categorySlug: data.categorySlug || "",
-            unitType: data.unitType || "kg",
-            // 🛑 Eliminamos 'variations'
-            isAvailable:
-              data.isAvailable !== undefined ? data.isAvailable : true,
-          });
+          const data = await fetchProductBySlug(slug);
+          if (data) {
+            setProductData({
+              name: data.name || "",
+              slug: data.slug || "",
+              description: data.description || "",
+              price: data.price ? String(data.price) : "",
+              stock: data.stock ? String(data.stock) : "",
+              categorySlug: data.categorySlug || "",
+              unitType: data.unitType || "kg",
+              isAvailable:
+                data.isAvailable !== undefined ? data.isAvailable : true,
+              imageURL: data.imageURL || null,
+            });
+          }
         } catch (err) {
-          setError(
-            `Error al cargar el producto: ${
-              err.response?.data?.message || err.message
-            }`
-          );
+          console.error("Error al cargar producto para edición:", err);
+          setError("No se pudo cargar el producto para editar.");
         } finally {
           setLoading(false);
         }
       };
-      fetchProduct();
-    } else {
-      // Modo Creación:
-      // 🛑 Eliminamos la línea que usaba initialVariation
-      setIsEditMode(false);
+      loadProduct();
     }
-  }, [slug, token]);
+  }, [slug]);
 
-  // 3. Manejar Cambios en Campos Simples
-  const handleInputChange = (e) => {
+  // --- Handlers de Formulario ---
+  const handleChange = (e) => {
     const { name, value, type, checked } = e.target;
-    setProductData((prev) => ({
-      ...prev,
-      [name]: type === "checkbox" ? checked : value,
-    }));
-    if (serverErrors[name]) {
-      setServerErrors((prev) => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
+
+    setProductData((prevData) => {
+      let newSlug = prevData.slug;
+
+      if (name === "name") {
+        newSlug = slugify(value, {
+          lower: true,
+          strict: true,
+          remove: /[*+~.()'"!:@]/g,
+        });
+      }
+
+      return {
+        ...prevData,
+        [name]: type === "checkbox" ? checked : value,
+        slug: newSlug,
+      };
+    });
+  };
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
   };
 
-  // Manejar Archivo de Imagen
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setImageFile(file);
-      // Crea una URL temporal para la previsualización
-      setProductData((prev) => ({
-        ...prev,
-        imageURL: URL.createObjectURL(file),
-      }));
-    } else {
-      setImageFile(null);
-      setProductData((prev) => ({ ...prev, imageURL: "" }));
-    }
-  };
-
-  // 🛑 Eliminados: handleVariationChange, addVariation, removeVariation, handleImageUpload (URL)
-
-  // 4. Manejar Envío del Formulario (POST/PUT con FormData)
+  // ==========================================================
+  // FUNCIÓN handleSubmit (SIN CAMBIOS)
+  // ==========================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
-    setServerErrors({});
 
-    try {
-      const url = isEditMode
-        ? `${API_BASE_URL}/products/${slug}`
-        : `${API_BASE_URL}/products`;
+    if (!isAuthenticated && isEditMode) {
+      setError(
+        "Error de sesión: No está autenticado. Por favor, inicie sesión."
+      );
+      setLoading(false);
+      logout();
+      return;
+    }
 
-      const method = isEditMode ? axios.put : axios.post;
+    const formData = new FormData();
 
-      const formData = new FormData();
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
 
-      // 1. Agregar el archivo de imagen si existe
-      if (imageFile) {
-        formData.append("image", imageFile);
-      } else if (isEditMode && productData.imageURL) {
-        // Si estamos editando y no subió un nuevo archivo, envía la URL existente
-        // para que el backend sepa que la imagen no cambió.
-        formData.append("imageURL", productData.imageURL);
-      }
+    for (const key in productData) {
+      if (key !== "imageURL") {
+        const value = productData[key];
 
-      // 2. Agregar todos los demás campos del producto
-      for (const key in productData) {
-        // Ignoramos imageURL si estamos en modo creación O si ya lo pusimos arriba
-        if (key !== "imageURL") {
-          formData.append(key, productData[key]);
+        if (key === "unitType" && !value) {
+          formData.append(key, "kg");
+        } else if (typeof value === "boolean") {
+          formData.append(key, value.toString());
+        } else if (value !== null && value !== undefined) {
+          formData.append(key, value);
         }
       }
+    }
 
-      // 3. Ajustar headers
+    console.log(
+      "Token usado para la petición:",
+      token ? "PRESENTE" : "FALTANTE"
+    );
+
+    try {
+      let response;
+
       const config = {
         headers: {
-          Authorization: `Bearer ${token}`,
+          Authorization: token ? `Bearer ${token}` : undefined,
         },
       };
 
-      await method(url, formData, config);
-
-      // Éxito: Navegar a la página de listado de productos
-      navigate("/admin/products");
-    } catch (err) {
-      const serverResponse = err.response;
-      if (
-        serverResponse &&
-        serverResponse.status === 400 &&
-        serverResponse.data.errors
-      ) {
-        const validationErrors = {};
-        serverResponse.data.errors.forEach((err) => {
-          validationErrors[err.path] = err.msg;
-        });
-        setServerErrors(validationErrors);
-        setError("Hay errores en el formulario. Por favor, revísalos.");
-      } else {
-        setError(
-          serverResponse?.data?.message ||
-            "Ocurrió un error inesperado al guardar el producto."
+      if (isEditMode) {
+        response = await axios.put(
+          `${API_URL}/products/${productData.slug}`,
+          formData,
+          config
         );
+        alert("¡Producto actualizado con éxito!");
+      } else {
+        response = await axios.post(`${API_URL}/products`, formData, config);
+        alert("¡Producto creado con éxito!");
+        setProductData(initialProductData);
+        setImageFile(null);
       }
+
+      navigate("/admin/products");
+    } catch (error) {
+      setLoading(false);
+
+      const status = error.response?.status;
+      const backendMessage =
+        error.response?.data?.message || JSON.stringify(error.response?.data);
+      const defaultMessage = error.message;
+
+      let finalErrorMessage;
+
+      if (status === 401 || status === 403) {
+        finalErrorMessage = `Error de Autorización (${status}). El token es inválido o ha expirado. Por favor, cierre e inicie sesión de nuevo.`;
+        logout();
+      } else if (status) {
+        finalErrorMessage = `Error del servidor (${status}): ${
+          backendMessage || "Revisa la consola del servidor."
+        }`;
+      } else {
+        finalErrorMessage = `Error de conexión: No se pudo conectar al servidor API. Revisa que el backend (${API_URL}) esté activo.`;
+      }
+
+      console.error(
+        `Fallo HTTP al guardar producto. Status: ${
+          status || "N/A"
+        }. Mensaje del servidor:`,
+        backendMessage
+      );
+
+      setError(finalErrorMessage);
+      alert(finalErrorMessage);
     } finally {
       setLoading(false);
     }
   };
+  // ==========================================================
+  // FIN DE LA FUNCIÓN handleSubmit
+  // ==========================================================
 
+  // --- Renderizado ---
+
+  if (loading && !isEditMode) {
+    return <div className="text-center py-10">Cargando formulario...</div>;
+  }
   if (loading && isEditMode) {
     return (
       <div className="text-center py-10">Cargando datos del producto...</div>
     );
   }
 
-  const title = isEditMode
-    ? `📝 Editar Producto: ${productData.name}`
-    : "➕ Crear Nuevo Producto";
-
   return (
-    <div className="max-w-4xl mx-auto p-6 bg-white shadow-xl rounded-lg">
-      <h1 className="text-4xl font-extrabold text-gray-800 mb-8">{title}</h1>
+    <div className="container mx-auto px-4 py-8">
+      <h1 className="text-3xl font-bold mb-6 text-gray-800">
+        {isEditMode
+          ? `Editar Producto: ${productData.name}`
+          : "Crear Nuevo Producto"}
+      </h1>
 
-      {error && (
-        <div className="p-4 mb-4 text-sm text-red-700 bg-red-100 rounded-lg">
-          {error}
-        </div>
-      )}
-
-      <form onSubmit={handleSubmit} className="space-y-8">
-        {/* === SECCIÓN 1: DATOS BÁSICOS === */}
-        <section className="p-6 border border-gray-200 rounded-lg">
-          <h2 className="text-2xl font-semibold mb-4 text-red-600">
-            Información General
-          </h2>
-
-          {/* Nombre */}
+      <form
+        onSubmit={handleSubmit}
+        className="bg-white p-6 rounded-lg shadow-xl"
+      >
+        {/* Nombre y Slug */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
-            <label
-              htmlFor="name"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Nombre del Producto
+            <label className="block text-gray-700 font-semibold mb-2">
+              Nombre
             </label>
             <input
               type="text"
-              id="name"
               name="name"
-              required
               value={productData.name}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
-            />
-            {serverErrors.name && (
-              <p className="text-red-500 text-xs mt-1">{serverErrors.name}</p>
-            )}
-          </div>
-
-          {/* Descripción */}
-          <div>
-            <label
-              htmlFor="description"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Descripción
-            </label>
-            <textarea
-              id="description"
-              name="description"
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
               required
-              value={productData.description}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500 h-24"
             />
-            {serverErrors.description && (
-              <p className="text-red-500 text-xs mt-1">
-                {serverErrors.description}
-              </p>
-            )}
           </div>
-
-          {/* Información Numérica */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mt-4">
-            {/* Precio Base */}
-            <div>
-              <label
-                htmlFor="price"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Precio Base
-              </label>
-              <input
-                type="number"
-                id="price"
-                name="price"
-                step="0.01"
-                min="0.01"
-                required
-                value={productData.price}
-                onChange={handleInputChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
-              />
-              {serverErrors.price && (
-                <p className="text-red-500 text-xs mt-1">
-                  {serverErrors.price}
-                </p>
-              )}
-            </div>
-
-            {/* Stock (Cantidad Total) */}
-            <div>
-              <label
-                htmlFor="stock"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Stock Total
-              </label>
-              <input
-                type="number"
-                id="stock"
-                name="stock"
-                min="0"
-                required
-                value={productData.stock}
-                onChange={handleInputChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
-              />
-              {serverErrors.stock && (
-                <p className="text-red-500 text-xs mt-1">
-                  {serverErrors.stock}
-                </p>
-              )}
-            </div>
-
-            {/* Tipo de Unidad */}
-            <div>
-              <label
-                htmlFor="unitType"
-                className="block text-sm font-medium text-gray-700"
-              >
-                Unidad de Venta
-              </label>
-              <select
-                id="unitType"
-                name="unitType"
-                required
-                value={productData.unitType}
-                onChange={handleInputChange}
-                className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
-              >
-                <option value="kg">Por Kilogramo (Kg)</option>
-                <option value="unit">Por Pieza / Paquete (Unidad)</option>
-              </select>
-            </div>
-
-            {/* Disponibilidad */}
-            <div className="flex items-center mt-6">
-              <input
-                id="isAvailable"
-                name="isAvailable"
-                type="checkbox"
-                checked={productData.isAvailable}
-                onChange={handleInputChange}
-                className="h-4 w-4 text-red-600 border-gray-300 rounded focus:ring-red-500"
-              />
-              <label
-                htmlFor="isAvailable"
-                className="ml-2 block text-sm font-medium text-gray-700"
-              >
-                Disponible para Venta
-              </label>
-            </div>
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Slug (URL)
+            </label>
+            <input
+              type="text"
+              name="slug"
+              value={productData.slug}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg bg-gray-50 focus:border-red-500"
+              required
+            />
           </div>
+        </div>
 
-          {/* Selector de Categoría */}
-          <div className="mt-6">
-            <label
-              htmlFor="categorySlug"
-              className="block text-sm font-medium text-gray-700"
+        {/* Descripción */}
+        <div className="mb-6">
+          <label className="block text-gray-700 font-semibold mb-2">
+            Descripción
+          </label>
+          <textarea
+            name="description"
+            value={productData.description}
+            onChange={handleChange}
+            rows="4"
+            className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
+            required
+          ></textarea>
+        </div>
+
+        {/* Precio, Stock, Tipo de Unidad, Categoría */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-6 mb-6">
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Precio ($)
+            </label>
+            <input
+              type="number"
+              name="price"
+              value={productData.price}
+              onChange={handleChange}
+              step="0.01"
+              min="0.01"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Stock
+            </label>
+            <input
+              type="number"
+              name="stock"
+              value={productData.stock}
+              onChange={handleChange}
+              min="0"
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500"
+              required
+            />
+          </div>
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              Tipo de Unidad
+            </label>
+            <select
+              name="unitType"
+              value={productData.unitType}
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-white"
+              required
             >
+              <option value="kg">Kilogramo (kg)</option>
+              <option value="unit">Unidad (unit)</option>
+            </select>
+          </div>
+
+          {/* 🟢 3. SECCIÓN DE CATEGORÍA: REEMPLAZAR <input> por <select> */}
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
               Categoría
             </label>
             <select
-              id="categorySlug"
               name="categorySlug"
-              required
               value={productData.categorySlug}
-              onChange={handleInputChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 focus:ring-red-500 focus:border-red-500"
+              onChange={handleChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-white"
+              required
+              disabled={loading}
             >
-              <option value="">Selecciona una Categoría...</option>
-              {categories.map((cat) => (
-                <option key={cat.slug} value={cat.slug}>
-                  {cat.name}
+              <option value="" disabled>
+                -- Seleccione una Categoría --
+              </option>
+              {categories.map((category) => (
+                <option key={category.slug} value={category.slug}>
+                  {category.name} ({category.slug})
                 </option>
               ))}
             </select>
-            {serverErrors.categorySlug && (
-              <p className="text-red-500 text-xs mt-1">
-                {serverErrors.categorySlug}
+            {categories.length === 0 && !loading && error && (
+              <p className="text-sm text-red-500 mt-2">
+                Error al cargar categorías: {error}
+              </p>
+            )}
+            {categories.length === 0 && !loading && !error && (
+              <p className="text-sm text-gray-500 mt-2">
+                Cargando categorías...
+              </p>
+            )}
+          </div>
+        </div>
+
+        {/* Imagen y Disponibilidad */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
+          <div>
+            <label className="block text-gray-700 font-semibold mb-2">
+              {isEditMode ? "Cambiar Imagen" : "Subir Imagen"}
+            </label>
+            <input
+              type="file"
+              name="image"
+              accept="image/*"
+              onChange={handleImageChange}
+              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-white"
+              required={
+                !isEditMode ||
+                (isEditMode && !productData.imageURL && !imageFile)
+              }
+            />
+            {isEditMode && productData.imageURL && (
+              <p className="text-sm text-gray-500 mt-2">
+                Imagen actual cargada.
               </p>
             )}
           </div>
 
-          {/* Subida de Imagen Principal (Input File) */}
-          <div className="mt-6">
-            <label
-              htmlFor="imageFile"
-              className="block text-sm font-medium text-gray-700"
-            >
-              Subir Imagen Principal
-            </label>
+          <div className="flex items-center pt-8">
             <input
-              type="file"
-              id="imageFile"
-              name="imageFile"
-              accept="image/*"
-              onChange={handleFileChange}
-              className="mt-1 block w-full border border-gray-300 rounded-md shadow-sm p-2 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-red-50 file:text-red-700 hover:file:bg-red-100"
+              type="checkbox"
+              name="isAvailable"
+              id="isAvailable"
+              checked={productData.isAvailable}
+              onChange={handleChange}
+              className="h-5 w-5 text-red-600 border-gray-300 rounded focus:ring-red-500"
             />
-            {productData.imageURL && (
-              <div className="mt-4 w-32 h-32 border border-gray-300 rounded-md overflow-hidden">
-                <img
-                  src={productData.imageURL}
-                  alt="Previsualización"
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-            {serverErrors.image && (
-              <p className="text-red-500 text-xs mt-1">{serverErrors.image}</p>
-            )}
+            <label
+              htmlFor="isAvailable"
+              className="ml-2 block text-gray-900 font-semibold"
+            >
+              Producto Disponible
+            </label>
           </div>
-        </section>
+        </div>
 
-        {/* === BOTONES DE ACCIÓN === */}
-        <div className="pt-6 border-t border-gray-200 flex justify-end space-x-4">
-          <button
-            type="button"
-            onClick={() => navigate("/admin/products")}
-            className="px-4 py-2 border border-gray-300 rounded-md text-gray-700 hover:bg-gray-50 transition duration-150"
-          >
-            Cancelar
-          </button>
+        {/* Botón de Submit y Mensajes */}
+        <div className="mt-8">
           <button
             type="submit"
             disabled={loading}
-            className={`px-6 py-2 border border-transparent rounded-md text-white font-medium shadow-sm transition duration-150 ${
-              loading
-                ? "bg-gray-400 cursor-not-allowed"
-                : "bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-            }`}
+            className="w-full py-3 px-4 bg-red-600 text-white font-bold rounded-lg hover:bg-red-700 transition-colors duration-200 disabled:bg-gray-400"
           >
             {loading
               ? "Guardando..."
               : isEditMode
-              ? "Guardar Cambios"
+              ? "Actualizar Producto"
               : "Crear Producto"}
           </button>
+          {error && <p className="text-red-500 mt-3 text-center">{error}</p>}
         </div>
       </form>
     </div>

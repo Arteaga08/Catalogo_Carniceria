@@ -83,8 +83,8 @@ const debugMiddleware = (req, res, next) => {
 // @access  Private/Admin/Editor
 // Solo administradores y editores pueden crear productos
 router.route("/").post(
-  //protect,
-  //editor,
+  protect,
+  editor,
   upload.single("image"),
   (req, res, next) => {
     console.log(

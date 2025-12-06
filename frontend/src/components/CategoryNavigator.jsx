@@ -5,6 +5,7 @@ const CategoryNavigator = ({
   categories,
   activeSlug,
   selectedPrincipalFromSidebar,
+  formatName,
 }) => {
   const [selectedPrincipal, setSelectedPrincipal] = useState(null);
   const principalCategories = Object.keys(categories || {});
@@ -50,7 +51,11 @@ const CategoryNavigator = ({
       linkSlug: subCat.slug,
       // Guardar el dato de imagen desde cualquier campo conocido
       imageURL:
-        subCat.imageURL || subCat.iconURL || subCat.imageUrl || subCat.image || null,
+        subCat.imageURL ||
+        subCat.iconURL ||
+        subCat.imageUrl ||
+        subCat.image ||
+        null,
     }));
     isShowingSubcategories = true;
     currentPrincipalName = selectedPrincipal;
@@ -59,14 +64,18 @@ const CategoryNavigator = ({
     itemsToDisplay = principalCategories.map((principalName) => {
       const firstSub =
         categories[principalName] && categories[principalName][0];
-        return {
-          displayName: principalName,
-          linkSlug: firstSub?.slug || "",
-          // Guardar el dato de imagen desde cualquier campo conocido
-          imageURL:
-            firstSub?.imageURL || firstSub?.iconURL || firstSub?.imageUrl || firstSub?.image || null,
-          principalName: principalName,
-        };
+      return {
+        displayName: formatName(principalName),
+        linkSlug: firstSub?.slug || "",
+        // Guardar el dato de imagen desde cualquier campo conocido
+        imageURL:
+          firstSub?.imageURL ||
+          firstSub?.iconURL ||
+          firstSub?.imageUrl ||
+          firstSub?.image ||
+          null,
+        principalName: principalName,
+      };
     });
   }
 
@@ -100,10 +109,18 @@ const CategoryNavigator = ({
           {itemsToDisplay.map((item) => {
             // Determinar src robustamente y evitar reusar un valor global
             const imgSrc =
-              item.imageURL || item.imageUrl || item.iconURL || item.image || "/images/default_category_icon.png";
+              item.imageURL ||
+              item.imageUrl ||
+              item.iconURL ||
+              item.image ||
+              "/images/default_category_icon.png";
             // DEBUG: ver qué src se está usando por item
             // eslint-disable-next-line no-console
-            console.log("CategoryNavigator render item:", item.displayName, imgSrc);
+            console.log(
+              "CategoryNavigator render item:",
+              item.displayName,
+              imgSrc
+            );
 
             if (isShowingSubcategories) {
               return (

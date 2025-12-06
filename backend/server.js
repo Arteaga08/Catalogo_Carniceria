@@ -15,17 +15,50 @@ import uploadRoutes from "./routes/uploadRoutes.js";
 // Cargar variables de entorno
 dotenv.config();
 
+console.log("🟡 JWT_SECRET cargada:", process.env.JWT_SECRET ? "SÍ" : "NO");
+
 // Inicializar la Conexión a MongoDB
 connectDB();
 
 const app = express();
+app.use(
+  cors({
+    origin: "*",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"], // <--- CRUCIAL
+    allowedHeaders: ["Content-Type", "Authorization", "X-Requested-With"],
+  })
+);
+app.use((req, res, next) => {
+  console.log(`📡 SOLICITUD ENTRANTE: ${req.method} ${req.originalUrl}`);
+  console.log(
+    "🔑 Header Auth:",
+    req.headers.authorization ? "PRESENTE" : "FALTANTE"
+  );
+  next();
+});
 const PORT = process.env.PORT || 5001;
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+const corsOptions = {
+  // Permite que la aplicación frontend (si es conocida) acceda.
+  // Si la URL de tu frontend es diferente a 3000, cámbiala.
+  // O puedes usar true para permitir todos los orígenes, pero es menos seguro.
+  origin: "http://localhost:3000",
+
+  // Permite los métodos necesarios, incluyendo PUT y DELETE
+  methods: ["GET", "POST", "PUT", "DELETE"],
+
+  // 🛑 CRUCIAL: Autoriza los headers que contienen el Token
+  allowedHeaders: ["Content-Type", "Authorization"],
+
+  // Permite enviar cookies/headers de autenticación (si se usaran credenciales)
+  credentials: true,
+};
+
 // MIDDLEWARE
-app.use(cors()); // **IMPORTANTE: Resuelve el 403**
+app.use(cors(corsOptions)); // **IMPORTANTE: Resuelve el 403**
 app.use(express.json());
 
 // RUTAS DE LA API
