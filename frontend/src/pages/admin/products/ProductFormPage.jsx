@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import axios from "axios";
-// 🟢 1. IMPORTAR fetchCategories para obtener la lista
 import { fetchProductBySlug, fetchCategories } from "../../../api/apiService";
 import { useAuth } from "../../../context/authContext";
 import slugify from "slugify";
@@ -16,7 +15,7 @@ const initialProductData = {
   price: "",
   stock: "",
   categorySlug: "",
-  unitType: "kg",
+  unitType: "kilogramo", // 🟢 CORRECCIÓN 1: Usar el valor del enum completo
   isAvailable: true,
 };
 
@@ -24,7 +23,7 @@ const ProductFormPage = () => {
   const { token, isAuthenticated, logout } = useAuth();
 
   const [productData, setProductData] = useState(initialProductData);
-  const [categories, setCategories] = useState([]); // 🟢 2. NUEVO ESTADO PARA CATEGORÍAS
+  const [categories, setCategories] = useState([]);
   const [imageFile, setImageFile] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -42,25 +41,18 @@ const ProductFormPage = () => {
 
         let allSubcategories = [];
 
-        // Verifica que 'data' sea un objeto (lo que sabemos que es)
         if (data && typeof data === "object" && !Array.isArray(data)) {
-          // 1. Obtener todas las claves principales (ej: carnicer-a, carnitas)
           const mainCategorySlugs = Object.keys(data);
 
-          // 2. Iterar sobre cada clave principal
           mainCategorySlugs.forEach((key) => {
             const subcategoriesArray = data[key];
 
-            // 3. Verificar que el valor sea un array de subcategorías
             if (Array.isArray(subcategoriesArray)) {
-              // 4. Concatenar (agregar) todos los arrays de subcategorías a la lista plana
-              // Las subcategorías son los elementos que contienen el slug y name que necesitamos.
               allSubcategories = allSubcategories.concat(subcategoriesArray);
             }
           });
         }
 
-        // 5. Establecer el estado con la lista plana de subcategorías
         if (Array.isArray(allSubcategories) && allSubcategories.length > 0) {
           setCategories(allSubcategories);
         } else {
@@ -95,7 +87,7 @@ const ProductFormPage = () => {
               price: data.price ? String(data.price) : "",
               stock: data.stock ? String(data.stock) : "",
               categorySlug: data.categorySlug || "",
-              unitType: data.unitType || "kg",
+              unitType: data.unitType || "kilogramo", // 🟢 Usar "kilogramo" como fallback
               isAvailable:
                 data.isAvailable !== undefined ? data.isAvailable : true,
               imageURL: data.imageURL || null,
@@ -139,7 +131,7 @@ const ProductFormPage = () => {
   };
 
   // ==========================================================
-  // FUNCIÓN handleSubmit (SIN CAMBIOS)
+  // FUNCIÓN handleSubmit (SIN CAMBIOS REQUERIDOS AQUÍ)
   // ==========================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -168,17 +160,14 @@ const ProductFormPage = () => {
       const value = finalProductData[key];
 
       if (key === "imageURL" && !imageFile && isEditMode) {
-        // Si el imageURL ya fue enviado arriba, lo ignoramos aquí.
         continue;
       }
       if (key === "slug") {
-        // El slug se usa en la URL PUT y no debe ser parte del body, típicamente.
         continue;
       }
 
-      if (key === "unitType" && !value) {
-        formData.append(key, "kg");
-      } else if (typeof value === "boolean") {
+      // Corregido: Ya no necesitamos el fallback 'kg' ya que usamos 'kilogramo' en initialProductData
+      if (typeof value === "boolean") {
         formData.append(key, value.toString());
       } else if (value !== null && value !== undefined) {
         formData.append(key, value);
@@ -215,7 +204,7 @@ const ProductFormPage = () => {
       const status = error.response?.status;
       const backendMessage =
         error.response?.data?.message || JSON.stringify(error.response?.data);
-      const defaultMessage = error.message;
+      // const defaultMessage = error.message;
 
       let finalErrorMessage;
 
@@ -270,6 +259,7 @@ const ProductFormPage = () => {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-xl"
       >
+        {/* ... (Nombre, Slug, Descripción, Precio, Stock) ... */}
         {/* Nombre y Slug */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
@@ -346,6 +336,8 @@ const ProductFormPage = () => {
               required
             />
           </div>
+
+          {/* 🟢 TIPO DE UNIDAD CORREGIDO */}
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Tipo de Unidad
@@ -357,12 +349,15 @@ const ProductFormPage = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-white"
               required
             >
-              <option value="kg">Kilogramo (kg)</option>
-              <option value="unit">Unidad (unit)</option>
+              <option value="kilogramo">Kilogramo (kg)</option>{" "}
+              {/* ⬅️ VALOR CORREGIDO */}
+              <option value="paquete">Paquete</option>{" "}
+              {/* ⬅️ VALOR CORREGIDO */}
+              <option value="pieza">Pieza</option> {/* ⬅️ VALOR CORREGIDO */}
             </select>
           </div>
 
-          {/* 🟢 3. SECCIÓN DE CATEGORÍA: REEMPLAZAR <input> por <select> */}
+          {/* 🟢 SECCIÓN DE CATEGORÍA */}
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Categoría
@@ -397,7 +392,7 @@ const ProductFormPage = () => {
           </div>
         </div>
 
-        {/* Imagen y Disponibilidad */}
+        {/* Imagen y Disponibilidad (sin cambios) */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
@@ -439,7 +434,7 @@ const ProductFormPage = () => {
           </div>
         </div>
 
-        {/* Botón de Submit y Mensajes */}
+        {/* Botón de Submit y Mensajes (sin cambios) */}
         <div className="mt-8">
           <button
             type="submit"

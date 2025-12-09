@@ -1,10 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartCotext";
+import { getAbsoluteImageUrl } from "../api/apiService";
 
 import { FaWhatsapp } from "react-icons/fa";
 
-const WHATSAPP_NUMBER = "5216182991059"; // 👈 REEMPLAZA CON TU NÚMERO DE WHATSAPP REAL
+const WHATSAPP_NUMBER = "5216182991059";
 
 const CartPage = () => {
   const { cartItems, cartTotal, removeFromCart, updateQuantity } = useCart();
@@ -14,13 +15,13 @@ const CartPage = () => {
     const item = cartItems.find((x) => x.lineItemId === lineItemId);
     if (!item) return;
 
-    // LÓGICA DE CONTROL DE UNIDADES:
-    const isInteger = item.isIntegerUnit || false;
+    // 🟢 LÓGICA CLAVE: Determinar si es entero por el unitType
+    const isInteger = item.unitType === "paquete" || item.unitType === "pieza";
+
     // La cantidad mínima es 1 para enteros y 0.5 para decimales por peso.
     const minQuantity = isInteger ? 1 : 0.5;
 
     // 1. Limpia y parsea el valor del input.
-    // Reemplaza comas por puntos para compatibilidad con parseFloat.
     const rawValue = event.target.value.replace(",", ".");
     let newQuantity = parseFloat(rawValue);
 
@@ -31,8 +32,8 @@ const CartPage = () => {
 
     // 3. Redondeo CONDICIONAL
     if (isInteger) {
-      // Si es entero (Paquete, Pieza), forzamos el redondeo al entero más cercano
-      newQuantity = Math.round(newQuantity);
+      // Si es entero, forzamos el redondeo hacia abajo (o a entero)
+      newQuantity = parseInt(newQuantity);
     }
     // ------------------------------------
 
@@ -48,14 +49,18 @@ const CartPage = () => {
       const quantityNum = Number(item.quantity);
       const subtotal = (item.price * quantityNum).toFixed(2);
 
-      // Determinar los decimales para el display del mensaje
-      const isInteger = item.isIntegerUnit || false;
-      const fixedDecimals = isInteger ? 0 : 1;
+      // 🟢 LÓGICA CLAVE: Determinar si es entero por el unitType
+      const isInteger =
+        item.unitType === "paquete" || item.unitType === "pieza";
 
-      // Usamos toFixed(fixedDecimals) para mostrar la cantidad correctamente
+      // Determinar los decimales para el display del mensaje
+      const fixedDecimals = isInteger ? 0 : 1;
+      const unitLabelDisplay =
+        item.unitType === "kilogramo" ? "kg" : item.unitType; // Abrevia 'kilogramo' a 'kg' para el mensaje
+
       message += `${index + 1}. ${item.name} | ${quantityNum.toFixed(
         fixedDecimals
-      )} ${item.unitLabel} | Subtotal: $${subtotal}\n`;
+      )} ${unitLabelDisplay} | Subtotal: $${subtotal}\n`;
     });
 
     message += `\nTotal del Pedido: $${cartTotal.toFixed(2)}`;
@@ -64,6 +69,7 @@ const CartPage = () => {
   };
 
   if (cartItems.length === 0) {
+    // ... (Contenido del carrito vacío)
     return (
       <div className="container mx-auto px-4 py-16 text-center">
         <h1 className="text-4xl font-extrabold text-gray-800 mb-4">
@@ -93,11 +99,13 @@ const CartPage = () => {
         <div className="lg:w-2/3 space-y-4">
           {cartItems.map((item) => {
             const quantityNum = Number(item.quantity);
-            // Preferir unitLabel; si no existe, usar unitName
-            const unitLabel = item.unitLabel || item.unitName || "Unidad";
 
-            // LÓGICA DINÁMICA: Determinar los parámetros por ítem
-            const isInteger = item.isIntegerUnit || false;
+            // 🟢 LÓGICA CLAVE: Determinar si es entero por el unitType
+            const isInteger =
+              item.unitType === "paquete" || item.unitType === "pieza";
+
+            const unitLabel =
+              item.unitType === "kilogramo" ? "kg" : item.unitType; // Etiqueta para display
             const stepValue = isInteger ? 1 : 0.5;
             const minQuantity = isInteger ? 1 : 0.5;
             const fixedDecimals = isInteger ? 0 : 1;
@@ -109,18 +117,18 @@ const CartPage = () => {
                 key={item.lineItemId}
                 className="bg-white shadow-lg rounded-lg p-4 grid grid-cols-1 sm:grid-cols-[72px_1fr_auto] gap-4 items-center"
               >
-                {/* Imagen */}
+                {/* Imagen y Detalles (sin cambios) */}
                 <div className="flex items-center justify-center">
                   <img
                     src={
-                      item.imageURL || "https://via.placeholder.com/80?text=🥩"
+                      getAbsoluteImageUrl(item.imageURL) ||
+                      "https://via.placeholder.com/80?text=🥩"
                     }
                     alt={item.name}
                     className="w-20 h-20 object-cover rounded-md"
                   />
                 </div>
 
-                {/* Detalles */}
                 <div className="min-w-0">
                   <Link
                     to={`/products/${item.slug}`}
@@ -131,7 +139,6 @@ const CartPage = () => {
                   <p className="text-sm text-gray-500 mt-1">
                     ${item.price.toFixed(2)} / {unitLabel}
                   </p>
-                  {/* Asegúrate de que item.description exista antes de mostrar */}
                   {item.description && (
                     <p className="text-sm text-gray-600 mt-2 line-clamp-2">
                       {item.description}
@@ -220,7 +227,7 @@ const CartPage = () => {
           })}
         </div>
 
-        {/* COLUMNA DERECHA: Resumen del Pedido */}
+        {/* COLUMNA DERECHA: Resumen del Pedido (sin cambios) */}
         <div className="lg:w-1/3">
           <div className="bg-white p-6 rounded-lg shadow-xl sticky top-24">
             <h2 className="text-2xl font-bold mb-4">Resumen de la Compra</h2>

@@ -67,7 +67,7 @@ const productSchema = mongoose.Schema(
     unitType: {
       type: String,
       required: true,
-      enum: ["kg", "unit"],
+      enum: ["kg", "paquete", "pieza"],
     },
     // 🛑 ELIMINADA la propiedad 'variations' si existía.
 

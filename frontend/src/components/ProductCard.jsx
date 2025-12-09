@@ -1,15 +1,12 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { useCart } from "../context/CartCotext";
-// ⬅️ ¡Ya está importada!
 import { getAbsoluteImageUrl } from "../api/apiService";
 
 const ProductCard = ({ product }) => {
   const { addToCart } = useCart();
 
   // 1. Determinar la fuente del Precio/Unidad
-  // Los productos creados recientemente tendrán campos planos (price, unitType).
-  // Los productos antiguos pueden tener 'variations'.
   let priceSource = null;
 
   // 🟢 LÓGICA CORREGIDA: Priorizar los nuevos campos planos
@@ -17,7 +14,8 @@ const ProductCard = ({ product }) => {
     // Si tiene campos planos (producto NUEVO/ACTUALIZADO)
     priceSource = {
       price: product.price,
-      unitDisplay: product.unitType,
+      // Usamos unitType de la DB
+      unitType: product.unitType,
       _id: product._id, // Usamos el ID del producto como ID de variación simple
     };
   } else if (product.variations && product.variations.length > 0) {
@@ -25,24 +23,28 @@ const ProductCard = ({ product }) => {
     const defaultVariation = product.variations[0];
     priceSource = {
       price: defaultVariation.price,
-      unitDisplay:
+      // Usamos el antiguo unitName/unitReference como unitType (fallback)
+      unitType:
         defaultVariation.unitName || defaultVariation.unitReference || "Unidad",
       _id: defaultVariation._id,
     };
   }
-  // 🛑 El producto que causaba el error ("Pollo de prubea") probablemente caía aquí
-  // porque no tenía ni 'price' plano ni 'variations'.
 
   // Si no hay datos de precio ni variación, no renderizamos la tarjeta (o mostramos un error)
   if (!priceSource) {
     console.error(`Producto sin precio o unidad válida: ${product.name}`);
-    return null; // No renderiza la tarjeta si no tiene precio
+    return null;
   }
 
   // 2. Definir variables para el Display
   // Usamos protección para evitar NaN en el display
   const priceDisplay = priceSource.price || 0;
-  const unitDisplay = priceSource.unitDisplay || "Unidad";
+
+  // 🟢 CLAVE: Lógica para abreviar 'kilogramo' a 'kg' en el display
+  let unitDisplay = priceSource.unitType || "Unidad";
+  if (unitDisplay === "kilogramo") {
+    unitDisplay = "kg";
+  }
 
   // 3. Handler para añadir el producto al carrito
   const handleAddToCart = (e) => {
@@ -50,25 +52,19 @@ const ProductCard = ({ product }) => {
     e.stopPropagation();
 
     // Cuando llamamos a addToCart, necesitamos pasar la información necesaria para el carrito.
-    // Usaremos 'priceSource' para simular la variación.
+    // Pasamos el priceSource, que ahora contiene el 'unitType' correcto.
     addToCart(product, priceSource, 1);
   };
 
-  // 🟢 CONSTRUCCIÓN DE LA URL ABSOLUTA
   const imageUrl = getAbsoluteImageUrl(product.imageURL);
 
   return (
     <div className="bg-white rounded-lg shadow-md overflow-hidden hover:shadow-xl transition-shadow duration-300">
-      {/* 🔴 El enlace envuelve toda la tarjeta excepto el botón para permitir navegación al detalle */}
       <Link to={`/products/${product.slug}`}>
         {/* Espacio para la imagen del producto */}
         <div className="h-48 overflow-hidden">
           <img
-            // ⬅️ ¡CORRECCIÓN APLICADA AQUÍ!
-            src={
-              // Usamos la variable imageUrl, que llama a getAbsoluteImageUrl
-              imageUrl
-            }
+            src={imageUrl}
             alt={product.name}
             className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
           />
@@ -85,7 +81,7 @@ const ProductCard = ({ product }) => {
             {product.name}
           </h3>
 
-          {/* Display del precio y unidad */}
+          {/* Display del precio y unidad (AHORA CORRECTO) */}
           <p className="text-xl font-bold text-gray-800 mb-3">
             ${Number(priceDisplay).toFixed(2)} / {unitDisplay}
           </p>

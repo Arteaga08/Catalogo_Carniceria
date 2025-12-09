@@ -230,7 +230,7 @@ const validateProduct = [
 
   // 🟢 AÑADIDA: Nueva validación para el tipo de unidad
   body("unitType")
-    .isIn(["kg", "unit"])
+    .isIn(["kilogramo", "paquete", "pieza"])
     .withMessage("El tipo de unidad debe ser 'kg' o 'unit'"),
 
   // 🛑 ELIMINADAS: TODAS las validaciones de 'variations'

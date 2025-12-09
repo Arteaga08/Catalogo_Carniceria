@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 
+
 // 1. Crear el Contexto
 const CartContext = createContext();
 
@@ -19,21 +20,20 @@ export const CartProvider = ({ children }) => {
   // --- Funciones de Manipulación del Carrito ---
 
   const addToCart = (product, variation, quantity = 1) => {
+    // NOTA: Asumo que product.unitType trae el valor de la DB (kilogramo, paquete, pieza)
     const lineItemId = `${product._id}-${variation._id || variation.unitLabel}`;
 
     const existItem = cartItems.find((x) => x.lineItemId === lineItemId);
 
     const itemPrice = variation.price || 0;
-    // Fallbacks: variation.unitLabel <- variation.unitName <- product.unitName
     const itemUnitLabel =
       variation.unitLabel || variation.unitName || product.unitName || "Unidad";
-    const itemUnitReference = variation.unitReference || variation.unitReference || "";
+    const itemUnitReference =
+      variation.unitReference || variation.unitReference || "";
 
-    const computedIsInteger =
-        typeof variation.isIntegerUnit === "boolean"
-          ? variation.isIntegerUnit
-          : false; //
-    
+    // 🟢 OBTENER unitType de la DB (asumiendo que viene en el objeto product)
+    const itemUnitType = product.unitType || "kilogramo"; // Fallback seguro
+
     if (existItem) {
       // Si existe, actualizar solo la cantidad de esa LÍNEA
       setCartItems(
@@ -42,29 +42,27 @@ export const CartProvider = ({ children }) => {
             ? {
                 ...existItem,
                 quantity: Number(existItem.quantity) + Number(quantity),
-              } // Aseguramos que la suma es numérica
+              }
             : x
         )
       );
     } else {
       // Si no existe, añadir la nueva línea de producto/variación
 
-      // 🚨 CORRECCIÓN APLICADA: Garantizar que la bandera de la VARIACIÓN tenga prioridad.
-      // 1. Si variation.isIntegerUnit es un booleano (true o false), se usa.
-      // 2. Si no, usamos el valor del producto (que ya sabemos que es false si el producto es Tocino Ahumado).
-      // NOTA: Es esencial que variation.isIntegerUnit esté llegando desde ProductDetailPage.jsx
-
       const newItem = {
-        lineItemId: lineItemId, // ID ÚNICO
+        lineItemId: lineItemId,
         productId: product._id,
         slug: product.slug,
         name: product.name,
         price: itemPrice,
         unitLabel: itemUnitLabel,
         unitReference: itemUnitReference,
-        isIntegerUnit: computedIsInteger, // ⬅️ Usamos el valor extraído
+
+        // 🟢 GUARDAMOS EL TIPO DE UNIDAD DE LA DB
+        unitType: itemUnitType,
+
         imageURL: product.imageURL,
-        quantity: quantity, // Usamos la cantidad inicial
+        quantity: quantity,
       };
       setCartItems([...cartItems, newItem]);
     }
@@ -74,14 +72,34 @@ export const CartProvider = ({ children }) => {
     setCartItems(cartItems.filter((x) => x.lineItemId !== lineItemId));
   };
 
+  // 🟢 FUNCIÓN CORREGIDA CON VALIDACIÓN DE ENTEROS
   const updateQuantity = (lineItemId, newQuantity) => {
-    // Aseguramos que newQuantity se almacene como número (aunque parseFloat se use en el componente)
     setCartItems(
-      cartItems.map((x) =>
-        x.lineItemId === lineItemId
-          ? { ...x, quantity: Number(newQuantity) }
-          : x
-      )
+      cartItems.map((x) => {
+        if (x.lineItemId === lineItemId) {
+          // LÓGICA CRÍTICA: Determinar si es entero
+          const isInteger = x.unitType === "paquete" || x.unitType === "pieza";
+          let quantityToSave = Number(newQuantity);
+
+          if (isInteger) {
+            // Forzar a entero para piezas/paquetes
+            quantityToSave = parseInt(quantityToSave);
+
+            // Asegurar el mínimo (1 para enteros)
+            if (isNaN(quantityToSave) || quantityToSave < 1) {
+              quantityToSave = 1;
+            }
+          } else {
+            // Para kilogramos, asegurar el mínimo (0.5 kg)
+            if (isNaN(quantityToSave) || quantityToSave < 0.5) {
+              quantityToSave = 0.5;
+            }
+          }
+
+          return { ...x, quantity: quantityToSave };
+        }
+        return x;
+      })
     );
   };
 
