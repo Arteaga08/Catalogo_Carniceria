@@ -156,29 +156,34 @@ const ProductFormPage = () => {
     }
 
     const formData = new FormData();
+    let finalProductData = { ...productData };
 
     if (imageFile) {
       formData.append("image", imageFile);
+    } else if (isEditMode && productData.imageURL) {
+      formData.append("imageURL", productData.imageURL);
     }
 
-    for (const key in productData) {
-      if (key !== "imageURL") {
-        const value = productData[key];
+    for (const key in finalProductData) {
+      const value = finalProductData[key];
 
-        if (key === "unitType" && !value) {
-          formData.append(key, "kg");
-        } else if (typeof value === "boolean") {
-          formData.append(key, value.toString());
-        } else if (value !== null && value !== undefined) {
-          formData.append(key, value);
-        }
+      if (key === "imageURL" && !imageFile && isEditMode) {
+        // Si el imageURL ya fue enviado arriba, lo ignoramos aquí.
+        continue;
+      }
+      if (key === "slug") {
+        // El slug se usa en la URL PUT y no debe ser parte del body, típicamente.
+        continue;
+      }
+
+      if (key === "unitType" && !value) {
+        formData.append(key, "kg");
+      } else if (typeof value === "boolean") {
+        formData.append(key, value.toString());
+      } else if (value !== null && value !== undefined) {
+        formData.append(key, value);
       }
     }
-
-    console.log(
-      "Token usado para la petición:",
-      token ? "PRESENTE" : "FALTANTE"
-    );
 
     try {
       let response;

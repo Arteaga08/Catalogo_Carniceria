@@ -2,21 +2,21 @@ import Product from "../models/ProductModel.js";
 import Category from "../models/categoryModel.js";
 import slugify from "slugify";
 
-// --- Controladores para Obtener Productos (Tus funciones GET existentes, ligeramente ajustadas) ---
+// --- Controladores para Obtener Productos ---
 
 // @desc    Obtener todos los productos (con paginación, filtros y búsqueda)
 // @route   GET /api/products
 // @access  Public
 const getProducts = async (req, res) => {
-  const { category: categorySlugQuery, q, limit } = req.query; // Renombrado para evitar conflicto
+  const { category: categorySlugQuery, q, limit } = req.query;
 
   try {
     let query = {};
 
+    // 🟢 Habilitamos el filtro de disponibilidad (puedes comentarlo para depurar si es necesario)
     query.isAvailable = true;
 
     if (categorySlugQuery) {
-      // Usamos el parámetro de query para filtrar por categorySlug
       query.categorySlug = categorySlugQuery;
     }
     if (q) {
@@ -41,7 +41,7 @@ const getProducts = async (req, res) => {
   }
 };
 
-// @desc    Obtiene un producto por su slug (ej. /api/products/bistec-de-res-selecto)
+// @desc    Obtiene un producto por su slug
 // @route   GET /api/products/:slug
 // @access  Public
 const getProductBySlug = async (req, res) => {
@@ -65,7 +65,7 @@ const getProductBySlug = async (req, res) => {
 // @access  Public
 const getProductsByCategory = async (req, res) => {
   try {
-    const { categorySlug } = req.params; // Usamos categorySlug del parámetro de la URL
+    const { categorySlug } = req.params;
 
     const products = await Product.find({
       categorySlug: { $regex: new RegExp(categorySlug, "i") },
@@ -124,20 +124,22 @@ const createProduct = async (req, res) => {
     price,
     stock,
     description,
-
     categorySlug,
     unitType,
     isAvailable,
   } = req.body;
 
-  // 2. 🟢 Obtener la ruta de la imagen subida por Multer
-  const imagePath = req.file ? req.file.path.replace(/\\/g, "/") : undefined;
+  // Si hay archivo, construimos la ruta. Si no, undefined.
+  // Nota: Al usar el nuevo middleware con ruta absoluta, req.file.path puede ser muy largo.
+  // Es mejor construir la URL pública manualmente basada en el filename.
+  let imagePath = undefined;
+  if (req.file) {
+    imagePath = `/uploads/products/${req.file.filename}`;
+  }
 
-  // 3. 🟢 Generar el slug automáticamente a partir del nombre
   const productSlug = slugify(name, { lower: true, strict: true });
 
   try {
-    // Validar que el categorySlug exista en la colección de categorías
     const categoryExists = await Category.findOne({ slug: categorySlug });
     if (!categoryExists) {
       res.status(400);
@@ -187,18 +189,17 @@ const updateProduct = async (req, res) => {
     price,
     stock,
     description,
-    imageURL,
+    imageURL, // URL de texto (si no hay archivo nuevo)
     categorySlug,
-    variations,
+    unitType,
     isAvailable,
   } = req.body;
 
   try {
-    // Buscamos el producto por el slug en los parámetros de la URL
     const product = await Product.findOne({ slug: req.params.slug });
 
     if (product) {
-      // Validar que el nuevo categorySlug exista si se intenta actualizar y es diferente
+      // Validar categoría si cambia
       if (categorySlug && product.categorySlug !== categorySlug) {
         const categoryExists = await Category.findOne({ slug: categorySlug });
         if (!categoryExists) {
@@ -209,16 +210,36 @@ const updateProduct = async (req, res) => {
         }
       }
 
-      product.name = name ?? product.name;
-      // El slug del producto no se actualiza directamente desde el body porque lo usamos para buscarlo.
-      // Si el slug necesita ser actualizable, la ruta PUT debería ser por _id o manejar el cambio de slug explícitamente.
-      product.price = price ?? product.price;
-      product.stock = stock ?? product.stock;
-      product.description = description ?? product.description;
-      product.imageURL = imageURL ?? product.imageURL;
-      product.categorySlug = categorySlug ?? product.categorySlug;
-      product.variations = variations ?? product.variations;
-      product.isAvailable = isAvailable ?? product.isAvailable;
+      // 🟢 LÓGICA DE ACTUALIZACIÓN DE IMAGEN CORREGIDA
+      let finalImageURL = product.imageURL; // Empezamos con la actual
+
+      if (req.file) {
+        // CASO 1: Hay un archivo nuevo subido por Multer
+        // Construimos la ruta pública tal como la espera el servidor estático
+        finalImageURL = `/uploads/products/${req.file.filename}`;
+      } else if (imageURL) {
+        // CASO 2: No hay archivo nuevo, pero se envió una URL de texto (ej. la vieja)
+        finalImageURL = imageURL;
+      }
+      // CASO 3: Si no hay ni archivo ni texto, se mantiene la original (finalImageURL)
+
+      // Actualizar campos
+      // Usamos || para strings, pero cuidado con números (0 es false).
+      // Para números y booleanos es mejor verificar undefined si quieres permitir 0 o false.
+
+      product.name = name || product.name;
+      product.price = price !== undefined ? price : product.price;
+      product.stock = stock !== undefined ? stock : product.stock;
+      product.description = description || product.description;
+      product.categorySlug = categorySlug || product.categorySlug;
+      product.unitType = unitType || product.unitType;
+
+      // Asignar la imagen calculada
+      product.imageURL = finalImageURL;
+
+      // isAvailable puede ser false, así que verificamos si es undefined
+      product.isAvailable =
+        isAvailable !== undefined ? isAvailable : product.isAvailable;
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);
@@ -240,10 +261,10 @@ const updateProduct = async (req, res) => {
 // @access  Private/Admin
 const deleteProduct = async (req, res) => {
   try {
-    const product = await Product.findOne({ slug: req.params.slug }); // Buscamos por slug
+    const product = await Product.findOne({ slug: req.params.slug });
 
     if (product) {
-      await product.deleteOne(); // Mongoose v6+
+      await product.deleteOne();
       res.json({ message: "Producto eliminado con éxito." });
     } else {
       res.status(404);

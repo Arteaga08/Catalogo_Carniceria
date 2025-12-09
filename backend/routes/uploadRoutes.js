@@ -21,15 +21,16 @@ router.post(
   isAdminOrEditor,
   upload.single("image"),
   (req, res) => {
-    // Si la subida fue exitosa, req.file contendrá la información del archivo
     if (req.file) {
-      const categorySlug = req.headers['x-category-slug'] || 'general';
-      // Devolvemos la URL accesible públicamente del archivo
-      const imageUrl = `/uploads/${categorySlug}/${req.file.filename}`;
-      res.json({ imageUrl: `/uploads/${req.file.filename}` });
+      // 🟢 CORRECCIÓN: DEVOLVER LA RUTA COMPLETA CON EL PREFIJO 'products'
+      // Ya que Multer está configurado para guardar en 'uploads/products'
+
+      // req.file.filename contiene 'image-12345.png'
+      const finalImageUrl = `/uploads/products/${req.file.filename}`;
+
+      // ⚠️ Asegúrate de que tu frontend usa 'imageUrl' y no 'imageURL' (si el frontend usa 'imageURL' cámbialo aquí)
+      res.json({ imageUrl: finalImageUrl });
     } else {
-      // Si multer falló por alguna razón (ej. tipo de archivo inválido), lanzará un error
-      // que será capturado por el errorHandler global
       res.status(400);
       throw new Error("No se pudo subir la imagen");
     }

@@ -41,6 +41,16 @@ const PORT = process.env.PORT || 5001;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+console.log("-----------------------------------------");
+console.log(`RUTA ABSOLUTA DEL BACKEND (__dirname): ${__dirname}`);
+
+const uploadsPath = path.join(__dirname, "/uploads");
+console.log(`RUTA ABSOLUTA DE UPLOADS (EXPRESS BUSCA AQUÍ): ${uploadsPath}`);
+
+const imagesPath = path.join(__dirname, "/images");
+console.log(`RUTA ABSOLUTA DE IMAGES (EXPRESS BUSCA AQUÍ): ${imagesPath}`);
+console.log("-----------------------------------------");
+
 const corsOptions = {
   // Permite que la aplicación frontend (si es conocida) acceda.
   // Si la URL de tu frontend es diferente a 3000, cámbiala.
@@ -74,6 +84,7 @@ app.use("/api/upload", uploadRoutes);
 
 //Img Upload
 app.use("/uploads", express.static(path.join(__dirname, "/uploads")));
+app.use("/images", express.static(path.join(__dirname, "/images")));
 
 // Middlewares de manejo de errores.
 app.use(notFound);
