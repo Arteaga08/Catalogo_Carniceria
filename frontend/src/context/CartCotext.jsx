@@ -78,7 +78,7 @@ export const CartProvider = ({ children }) => {
       cartItems.map((x) => {
         if (x.lineItemId === lineItemId) {
           // LÓGICA CRÍTICA: Determinar si es entero
-          const isInteger = x.unitType === "paquete" || x.unitType === "pieza";
+          const isInteger = x.unitType === "Paquete" || x.unitType === "Pieza";
           let quantityToSave = Number(newQuantity);
 
           if (isInteger) {

@@ -33,8 +33,12 @@ const getCategoryBySlug = asyncHandler(async (req, res) => {
 
 // 3. createCategory (NUEVA FUNCIÓN)
 const createCategory = asyncHandler(async (req, res) => {
-  const { name, description, categoryPrincipal, iconURL, imageURL, order } = req.body;
+  const { name, description, categoryPrincipal, iconURL, order } = req.body;
+  const imageURL = req.file
+    ? `/uploads/categories/${req.file.filename}`
+    : req.body.imageURL;
   const slug = slugify(name, { lower: true, strict: true });
+
   const categoryExists = await Category.findOne({
     $or: [{ name: { $regex: new RegExp(`^${name}$`, "i") } }, { slug }],
   });
@@ -59,7 +63,21 @@ const createCategory = asyncHandler(async (req, res) => {
 const updateCategory = asyncHandler(async (req, res) => {
   const { name, description, categoryPrincipal, order, iconURL, imageURL } =
     req.body;
+
   const category = await Category.findOne({ slug: req.params.slug });
+  let newImageURL = category.imageURL;
+  if (req.file) {
+    // 1. Hay un archivo nuevo. Usar la ruta de Multer.
+    newImageURL = `/uploads/categories/${req.file.filename}`; // <-- Ojo con la ruta
+    // NOTA: Aquí deberías borrar la imagen vieja si category.imageURL existía!
+  } else if (imageURL) {
+    // 2. No hay archivo nuevo, pero se envió imageURL en el body (la URL existente que el form mandó).
+    newImageURL = imageURL;
+  } else if (req.body.hasOwnProperty("imageURL") && req.body.imageURL === "") {
+    // 3. El usuario borró la imagen del formulario (si tu form permite esto, y se envía como cadena vacía)
+    newImageURL = "";
+  }
+
   if (category) {
     if (name && name !== category.name) {
       const newSlug = slugify(name, { lower: true, strict: true });
@@ -84,7 +102,8 @@ const updateCategory = asyncHandler(async (req, res) => {
       categoryPrincipal ?? category.categoryPrincipal;
     category.order = order ?? category.order;
     category.iconURL = iconURL ?? category.iconURL; // Actualizar
-    category.imageURL = imageURL ?? category.imageURL;
+
+    category.imageURL = newImageURL;
 
     const updatedCategory = await category.save();
     res.json(updatedCategory);

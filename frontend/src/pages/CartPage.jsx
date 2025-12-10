@@ -16,7 +16,7 @@ const CartPage = () => {
     if (!item) return;
 
     // 🟢 LÓGICA CLAVE: Determinar si es entero por el unitType
-    const isInteger = item.unitType === "paquete" || item.unitType === "pieza";
+    const isInteger = item.unitType === "Paquete" || item.unitType === "Pieza";
 
     // La cantidad mínima es 1 para enteros y 0.5 para decimales por peso.
     const minQuantity = isInteger ? 1 : 0.5;
@@ -51,12 +51,12 @@ const CartPage = () => {
 
       // 🟢 LÓGICA CLAVE: Determinar si es entero por el unitType
       const isInteger =
-        item.unitType === "paquete" || item.unitType === "pieza";
+        item.unitType === "Paquete" || item.unitType === "Pieza";
 
       // Determinar los decimales para el display del mensaje
       const fixedDecimals = isInteger ? 0 : 1;
       const unitLabelDisplay =
-        item.unitType === "kilogramo" ? "kg" : item.unitType; // Abrevia 'kilogramo' a 'kg' para el mensaje
+        item.unitType === "Kilogramo" ? "Kg" : item.unitType; // Abrevia 'kilogramo' a 'kg' para el mensaje
 
       message += `${index + 1}. ${item.name} | ${quantityNum.toFixed(
         fixedDecimals
@@ -102,10 +102,10 @@ const CartPage = () => {
 
             // 🟢 LÓGICA CLAVE: Determinar si es entero por el unitType
             const isInteger =
-              item.unitType === "paquete" || item.unitType === "pieza";
+              item.unitType === "Paquete" || item.unitType === "Pieza";
 
             const unitLabel =
-              item.unitType === "kilogramo" ? "kg" : item.unitType; // Etiqueta para display
+              item.unitType === "Kilogramo" ? "Kg" : item.unitType; // Etiqueta para display
             const stepValue = isInteger ? 1 : 0.5;
             const minQuantity = isInteger ? 1 : 0.5;
             const fixedDecimals = isInteger ? 0 : 1;

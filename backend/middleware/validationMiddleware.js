@@ -152,13 +152,9 @@ const validateCategory = [
     .withMessage("El orden debe ser un número entero no negativo"),
   // Añadimos validaciones para las URLs de imagen si se proporcionan
   body("iconURL")
-    .optional()
-    .isURL()
-    .withMessage("La URL del icono debe ser una URL válida"),
+    .optional(),
   body("imageURL")
-    .optional()
-    .isURL()
-    .withMessage("La URL de la imagen debe ser una URL válida"),
+    .optional(),
   handleValidationErrors,
 ];
 
@@ -230,8 +226,8 @@ const validateProduct = [
 
   // 🟢 AÑADIDA: Nueva validación para el tipo de unidad
   body("unitType")
-    .isIn(["kilogramo", "paquete", "pieza"])
-    .withMessage("El tipo de unidad debe ser 'kg' o 'unit'"),
+    .isIn(["Kg", "Paquete", "Pieza"])
+    .withMessage("El tipo de unidad debe ser 'Kg', 'Paquete' o 'Pieza'"),
 
   // 🛑 ELIMINADAS: TODAS las validaciones de 'variations'
 

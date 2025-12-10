@@ -234,12 +234,23 @@ const updateProduct = async (req, res) => {
       product.categorySlug = categorySlug || product.categorySlug;
       product.unitType = unitType || product.unitType;
 
+      if (price !== undefined) {
+        product.price = parseFloat(price);
+      }
+      // 3. Asignar stock: Convertir a entero si el valor está presente
+      if (stock !== undefined) {
+        product.stock = parseInt(stock, 10);
+      }
+
       // Asignar la imagen calculada
       product.imageURL = finalImageURL;
 
       // isAvailable puede ser false, así que verificamos si es undefined
-      product.isAvailable =
-        isAvailable !== undefined ? isAvailable : product.isAvailable;
+      if (isAvailable !== undefined) {
+        // El valor llega como cadena "true" o "false" desde el FormData,
+        // por lo que comparamos con la cadena "true".
+        product.isAvailable = isAvailable === "true";
+      }
 
       const updatedProduct = await product.save();
       res.json(updatedProduct);

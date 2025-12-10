@@ -24,25 +24,26 @@ const categories = {
     {
       name: "Carne de Res",
       slug: "carne-de-res",
-      iconURL: "/images/Carniceria/CarneRes/New-york.png",
+      imageURL: "/uploads/images/Carniceria/CarneRes/New-york.png", // 🟢 Modificado
       order: 1,
     },
     {
       name: "Carne de Puerco",
       slug: "carne-de-puerco",
-      iconURL: "/images/Carniceria/CarneCerdo/chuleta-cerdo-ahumada.png",
+      imageURL:
+        "/uploads/images/Carniceria/CarneCerdo/chuleta-cerdo-ahumada.png", // 🟢 Modificado
       order: 2,
     },
     {
       name: "Pollo",
       slug: "pollo",
-      iconURL: "/images/Carniceria/Pollo/pollo-pechuga.png",
+      imageURL: "/uploads/images/Carniceria/Pollo/pollo-pechuga.png", // 🟢 Modificado
       order: 3,
     },
     {
       name: "Procesado",
       slug: "procesado",
-      iconURL: "/images/Congelado/Carne-para-hamburguesa-Burgy.jpg",
+      imageURL: "/uploads/images/Congelado/Carne-para-hamburguesa-Burgy.jpg", // 🟢 Modificado
       order: 4,
     },
   ],
@@ -50,13 +51,13 @@ const categories = {
     {
       name: "Cortes para Asar",
       slug: "cortes-para-asar",
-      iconURL: "/images/Carniceria/CarneRes/Tomahawk.png",
+      imageURL: "/uploads/images/Carniceria/CarneRes/Tomahawk.png", // 🟢 Modificado
       order: 1,
     },
     {
       name: "Cortes Premium",
       slug: "cortes-premium",
-      iconURL: "/images/Parrilleros/cortes-premium.png",
+      imageURL: "/uploads/images/Parrilleros/cortes-premium.png", // 🟢 Modificado
       order: 2,
     },
   ],
@@ -64,13 +65,13 @@ const categories = {
     {
       name: "Paquetes para Asar",
       slug: "paquetes-para-asar",
-      iconURL: "/images/Carniceria/CarneRes/Cowboy.png",
+      imageURL: "/uploads/images/Carniceria/CarneRes/Cowboy.png", // 🟢 Modificado
       order: 1,
     },
     {
       name: "Paquetes para Discada",
       slug: "paquetes-para-discada",
-      iconURL: "/images/Paquetes/paquete-discada.png",
+      imageURL: "/uploads/images/Paquetes/paquete-discada.png", // 🟢 Modificado
       order: 2,
     },
   ],
@@ -78,13 +79,13 @@ const categories = {
     {
       name: "Carnitas Tradicionales",
       slug: "carnitas-tradicionales",
-      iconURL: "/images/Carniceria/CarneCerdo/cerdo-costilla.png",
+      imageURL: "/uploads/images/Carniceria/CarneCerdo/cerdo-costilla.png", // 🟢 Modificado
       order: 1,
     },
     {
       name: "Chicharrones",
       slug: "chicharrones",
-      iconURL: "/images/Carnitas/chicharron.png",
+      imageURL: "/uploads/images/Carnitas/chicharron.png", // 🟢 Modificado
       order: 2,
     },
   ],
@@ -92,13 +93,13 @@ const categories = {
     {
       name: "Hamburguesas",
       slug: "hamburguesas",
-      iconURL: "/images/Congelado/Carne-para-hamburguesa-Burgy.jpg",
+      imageURL: "/uploads/images/Congelado/Carne-para-hamburguesa-Burgy.jpg", // 🟢 Modificado
       order: 1,
     },
     {
       name: "Nuggets",
       slug: "nuggets",
-      iconURL: "/images/Congelado/nuggets.png",
+      imageURL: "/uploads/images/Congelado/nuggets.png", // 🟢 Modificado
       order: 2,
     },
   ],
@@ -113,11 +114,11 @@ const products = [
     slug: "bistec-de-res-selecto",
     description:
       "Corte delgado y magro, ideal para asar o freír. Frescura garantizada. El corte de Res más popular.",
-    imageURL: "/images/Carniceria/CarneRes/bisteck0.png",
+    imageURL: "/uploads/images/Carniceria/CarneRes/bisteck0.png",
     categorySlug: "carne-de-res",
-    price: 195.0, // <-- Precio del primer variation (KG)
-    stock: 50, // <-- Valor inicial para que pase la validación
-    unitType: "kg", // <-- Asignado basado en unitName "Kg"
+    price: 195.0,
+    stock: 50,
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -125,11 +126,11 @@ const products = [
     slug: "carne-molida-premium",
     description:
       "Carne fresca y molida con la mezcla ideal de grasa para hamburguesas jugosas y albóndigas.",
-    imageURL: "/images/Carniceria/CarneRes/molida-especial.png",
+    imageURL: "/uploads/images/Carniceria/CarneRes/molida-especial.png",
     categorySlug: "carne-de-res",
     price: 150.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -137,11 +138,11 @@ const products = [
     slug: "diezmillo-para-guisar",
     description:
       "Corte de res económico y sabroso, ideal para guisos lentos, caldos o estofados.",
-    imageURL: "/images/Carniceria/CarneRes/diezmillo-marinado.png",
+    imageURL: "/uploads/images/Carniceria/CarneRes/diezmillo-marinado.png",
     categorySlug: "carne-de-res",
     price: 120.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -149,11 +150,11 @@ const products = [
     slug: "milanesa-de-res",
     description:
       "Corte de res económico y sabroso, ideal para guisos lentos, caldos o empanizar.",
-    imageURL: "/images/Carniceria/CarneRes/milanesa-res.png",
+    imageURL: "/uploads/images/Carniceria/CarneRes/milanesa-res.png",
     categorySlug: "carne-de-res",
     price: 85.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -165,11 +166,11 @@ const products = [
     slug: "chuleta-puerco-ahumada",
     description:
       "Chuletas gruesas de puerco con un delicioso sabor ahumado. Perfectas para sartén.",
-    imageURL: "/images/Carniceria/CarneCerdo/chuleta-cerdo-ahumada.png",
+    imageURL: "/uploads/images/Carniceria/CarneCerdo/chuleta-cerdo-ahumada.png",
     categorySlug: "carne-de-puerco",
     price: 110.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -177,11 +178,11 @@ const products = [
     slug: "costilla-st-louis",
     description:
       "Rack de costillas cortadas estilo St. Louis, perfectas para la barbacoa.",
-    imageURL: "/images/Carniceria/CarneCerdo/cerdo-costilla.png",
+    imageURL: "/uploads/images/Carniceria/CarneCerdo/cerdo-costilla.png",
     categorySlug: "carne-de-puerco",
     price: 290.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -189,11 +190,11 @@ const products = [
     slug: "espaldilla-puerco",
     description:
       "Corte magro de cerdo ideal para preparar chicharrón prensado o carne deshebrada.",
-    imageURL: "/images/Carniceria/CarneCerdo/espaldilla-cerdo.png",
+    imageURL: "/uploads/images/Carniceria/CarneCerdo/espaldilla-cerdo.png",
     categorySlug: "carne-de-puerco",
     price: 95.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -201,11 +202,11 @@ const products = [
     slug: "molida-de-cerdo",
     description:
       "Lomo de cerdo fresco, sin hueso. Ideal para asar al horno o rellenar.",
-    imageURL: "/images/Carniceria/CarneCerdo/molida-cerdo.png",
+    imageURL: "/uploads/images/Carniceria/CarneCerdo/molida-cerdo.png",
     categorySlug: "carne-de-puerco",
     price: 140.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -217,11 +218,11 @@ const products = [
     slug: "pechuga-pollo-sin-hueso",
     description:
       "Pechugas de pollo frescas, sin hueso ni piel, listas para filetear.",
-    imageURL: "/images/Carniceria/Pollo/pollo-pechuga.png",
+    imageURL: "/uploads/images/Carniceria/Pollo/pollo-pechuga.png",
     categorySlug: "pollo",
     price: 98.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -229,22 +230,22 @@ const products = [
     slug: "muslo-y-pierna-hueso",
     description:
       "Paquete mixto de muslo y pierna, jugosos, ideales para caldos.",
-    imageURL: "/images/Carniceria/Pollo/pollo-pierna-muslo.png",
+    imageURL: "/uploads/images/Carniceria/Pollo/pollo-pierna-muslo.png",
     categorySlug: "pollo",
     price: 70.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
     name: "Alas de Pollo Enteras",
     slug: "alas-de-pollo-enteras",
     description: "Alas frescas, perfectas para marinadas caseras o freír.",
-    imageURL: "/images/Carniceria/Pollo/pollo-alitas.png",
+    imageURL: "/uploads/images/Carniceria/Pollo/pollo-alitas.png",
     categorySlug: "pollo",
     price: 80.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -252,11 +253,11 @@ const products = [
     slug: "milanesa-pollo",
     description:
       "Filetes delgados de pechuga listos para empanizar. Fáciles y rápidos.",
-    imageURL: "/images/Carniceria/Pollo/milanesa-pollo.png",
+    imageURL: "/uploads/images/Carniceria/Pollo/milanesa-pollo.png",
     categorySlug: "pollo",
     price: 75.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -268,11 +269,11 @@ const products = [
     slug: "jamon-pavo-cerdo",
     description:
       "Jamón de calidad, ideal para sándwiches y desayunos. Rebanado fino.",
-    imageURL: "/images/jamon.jpg",
+    imageURL: "/uploads/images/jamon.jpg",
     categorySlug: "procesado",
     price: 55.0,
     stock: 50,
-    unitType: "unit", // Asignado basado en unitReference "PAQ"
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -280,11 +281,11 @@ const products = [
     slug: "salchicha-viena",
     description:
       "Salchichas ideales para hot dogs y botanas. Empacadas al vacío.",
-    imageURL: "/images/salchicha.jpg",
+    imageURL: "/uploads/images/salchicha.jpg",
     categorySlug: "procesado",
     price: 40.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -292,11 +293,11 @@ const products = [
     slug: "tocino-ahumado",
     description:
       "Tiras de tocino crujiente con profundo sabor ahumado. Ideal para desayunos.",
-    imageURL: "/images/tocino.jpg",
+    imageURL: "/uploads/images/tocino.jpg",
     categorySlug: "procesado",
     price: 65.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -304,11 +305,11 @@ const products = [
     slug: "chorizo-de-cerdo",
     description:
       "Chorizo tradicional de cerdo con especias, perfecto para huevos o asados.",
-    imageURL: "/images/chorizo.jpg",
+    imageURL: "/uploads/images/chorizo.jpg",
     categorySlug: "procesado",
     price: 45.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -320,11 +321,11 @@ const products = [
     slug: "arrachera-marinada",
     description:
       "Corte premium de falda de res marinado. Jugoso y con sabor intenso. Lista para la parrilla.",
-    imageURL: "/images/arrachera-asar.jpg",
+    imageURL: "/uploads/images/arrachera-asar.jpg",
     categorySlug: "cortes-para-asar",
     price: 350.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -332,11 +333,11 @@ const products = [
     slug: "aguja-nortena",
     description:
       "Corte con buen marmoleo y sabor, perfecto para tacos y reuniones. Precio accesible.",
-    imageURL: "/images/aguja-nortena.jpg",
+    imageURL: "/uploads/images/aguja-nortena.jpg",
     categorySlug: "cortes-para-asar",
     price: 165.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -344,11 +345,11 @@ const products = [
     slug: "sirloin-de-res",
     description:
       "Corte magro y con gran sabor, ideal para la parrilla sin ser demasiado graso.",
-    imageURL: "/images/sirloin-asar.jpg",
+    imageURL: "/uploads/images/sirloin-asar.jpg",
     categorySlug: "cortes-para-asar",
     price: 150.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -356,11 +357,11 @@ const products = [
     slug: "costilla-cargada-res",
     description:
       "Tiras de costilla con carne adherida. Mucho sabor para cocción lenta en el asador.",
-    imageURL: "/images/costilla-cargada.jpg",
+    imageURL: "/uploads/images/costilla-cargada.jpg",
     categorySlug: "cortes-para-asar",
     price: 210.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -372,11 +373,11 @@ const products = [
     slug: "rib-eye-prime",
     description:
       "El rey de los cortes. Alto marmoleo y textura mantequillosa. 1 pulgada de grosor.",
-    imageURL: "/images/rib-eye.jpg",
+    imageURL: "/uploads/images/rib-eye.jpg",
     categorySlug: "cortes-premium",
     price: 420.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Pieza", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -384,11 +385,11 @@ const products = [
     slug: "new-york-strip",
     description:
       "Corte con una banda de grasa lateral que da un gran sabor. Ideal para amantes del sabor intenso.",
-    imageURL: "/images/new-york.jpg",
+    imageURL: "/uploads/images/new-york.jpg",
     categorySlug: "cortes-premium",
     price: 380.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Pieza", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -396,11 +397,11 @@ const products = [
     slug: "filete-mignon-premium",
     description:
       "El corte más tierno. Magro y delicado, perfecto para ocasiones especiales.",
-    imageURL: "/images/filete-mignon-prem.jpg",
+    imageURL: "/uploads/images/filete-mignon-prem.jpg",
     categorySlug: "cortes-premium",
     price: 550.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Pieza", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -408,11 +409,11 @@ const products = [
     slug: "tomahawk-de-res",
     description:
       "Imponente corte Rib Eye con hueso de costilla largo. El centro de la mesa.",
-    imageURL: "/images/tomahawk.jpg",
+    imageURL: "/uploads/images/tomahawk.jpg",
     categorySlug: "cortes-premium",
     price: 950.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Pieza", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -424,11 +425,11 @@ const products = [
     slug: "paquete-familiar-bbq",
     description:
       "Incluye Arrachera, Aguja Norteña, Chorizo y Salsas. Perfecto para 6-8 personas.",
-    imageURL: "/images/paq-familiar.jpg",
+    imageURL: "/uploads/images/paq-familiar.jpg",
     categorySlug: "paquetes-para-asar",
     price: 799.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -436,11 +437,11 @@ const products = [
     slug: "paquete-fiesta-grande",
     description:
       "Rib Eye, New York y Tiras de Costilla. Calidad premium para tu fiesta.",
-    imageURL: "/images/paq-fiesta.jpg",
+    imageURL: "/uploads/images/paq-fiesta.jpg",
     categorySlug: "paquetes-para-asar",
     price: 1250.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -448,11 +449,11 @@ const products = [
     slug: "paquete-tacos-asada",
     description:
       "Bistec para asar, Molida, Tortillas y Limones. Todo para unos tacos rápidos.",
-    imageURL: "/images/paq-tacos.jpg",
+    imageURL: "/uploads/images/paq-tacos.jpg",
     categorySlug: "paquetes-para-asar",
     price: 450.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -460,11 +461,11 @@ const products = [
     slug: "paquete-basico-parrillero",
     description:
       "Chorizo, Longaniza y Aguja Norteña. Lo esencial para empezar el asado.",
-    imageURL: "/images/paq-basico.jpg",
+    imageURL: "/uploads/images/paq-basico.jpg",
     categorySlug: "paquetes-para-asar",
     price: 599.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -476,11 +477,11 @@ const products = [
     slug: "paquete-discada-res-puerco",
     description:
       "Paquete para 6 personas. Carne de res, carne de puerco, tocino y chorizo listos para tu disco.",
-    imageURL: "/images/discada-res-puerco.jpg",
+    imageURL: "/uploads/images/discada-res-puerco.jpg",
     categorySlug: "paquetes-para-discada",
     price: 650.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -488,11 +489,11 @@ const products = [
     slug: "paquete-discada-pollo-puerco",
     description:
       "Paquete para 10 personas. Carne de pollo, puerco, salchicha y tocino. Una mezcla diferente y ligera.",
-    imageURL: "/images/discada-pollo-puerco.jpg",
+    imageURL: "/uploads/images/discada-pollo-puerco.jpg",
     categorySlug: "paquetes-para-discada",
     price: 590.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -500,11 +501,11 @@ const products = [
     slug: "paquete-surtido-discada",
     description:
       "Paquete para 15 personas. Incluye Arrachera, Bistec, Lomo de Cerdo y Chuleta. Para una discada de lujo.",
-    imageURL: "/images/discada-premium.jpg",
+    imageURL: "/uploads/images/discada-premium.jpg",
     categorySlug: "paquetes-para-discada",
     price: 890.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -512,11 +513,11 @@ const products = [
     slug: "adobo-para-discada",
     description:
       "Adobo especial de la casa, listo para marinar tu carne antes de la discada.",
-    imageURL: "/images/adobo-discada.jpg",
+    imageURL: "/uploads/images/adobo-discada.jpg",
     categorySlug: "paquetes-para-discada",
     price: 75.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -528,11 +529,11 @@ const products = [
     slug: "carnitas-surtidas",
     description:
       "Mezcla tradicional de carnitas. Tiernas y doradas. Listas para servir.",
-    imageURL: "/images/carnitas-surtidas.jpg",
+    imageURL: "/uploads/images/carnitas-surtidas.jpg",
     categorySlug: "carnitas-tradicionales",
     price: 190.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -540,11 +541,11 @@ const products = [
     slug: "maciza-de-puerco",
     description:
       "Solo carne magra de puerco, suave y jugosa. Ideal para quienes prefieren sin grasa.",
-    imageURL: "/images/maciza.jpg",
+    imageURL: "/uploads/images/maciza.jpg",
     categorySlug: "carnitas-tradicionales",
     price: 210.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -552,11 +553,11 @@ const products = [
     slug: "cueritos-encurtidos",
     description:
       "Cueritos de cerdo en vinagre, perfectos para tostadas y botanas.",
-    imageURL: "/images/cueritos-encurtidos.jpg",
+    imageURL: "/uploads/images/cueritos-encurtidos.jpg",
     categorySlug: "carnitas-tradicionales",
     price: 80.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -564,11 +565,11 @@ const products = [
     slug: "buche-de-cerdo",
     description:
       "Buche suave de cerdo, cocido y listo para añadir a tus tacos de carnitas.",
-    imageURL: "/images/buche-cerdo.jpg",
+    imageURL: "/uploads/images/buche-cerdo.jpg",
     categorySlug: "carnitas-tradicionales",
     price: 95.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -580,11 +581,11 @@ const products = [
     slug: "chicharron-prensado",
     description:
       "Chicharrón suave y prensado, ideal para preparar guisos, gorditas y quesadillas.",
-    imageURL: "/images/chicharron-prensado.jpg",
+    imageURL: "/uploads/images/chicharron-prensado.jpg",
     categorySlug: "chicharrones",
     price: 160.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -592,11 +593,11 @@ const products = [
     slug: "chicharron-cachete",
     description:
       "Chicharrón crujiente de cachete de puerco. El más sabroso para un snack.",
-    imageURL: "/images/chicharron-cachete.jpg",
+    imageURL: "/uploads/images/chicharron-cachete.jpg",
     categorySlug: "chicharrones",
     price: 70.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -604,11 +605,11 @@ const products = [
     slug: "chicharron-pancita",
     description:
       "Pedazos de pancita de cerdo frita, perfecta para botanear con limón y salsa.",
-    imageURL: "/images/chicharron-pancita.jpg",
+    imageURL: "/uploads/images/chicharron-pancita.jpg",
     categorySlug: "chicharrones",
     price: 230.0,
     stock: 50,
-    unitType: "kg",
+    unitType: "Kg", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -616,11 +617,11 @@ const products = [
     slug: "salsa-chicharron",
     description:
       "Salsa roja casera especial para bañar o mojar tu chicharrón. Picosita.",
-    imageURL: "/images/salsa-chicharron.jpg",
+    imageURL: "/uploads/images/salsa-chicharron.jpg",
     categorySlug: "chicharrones",
     price: 50.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -632,22 +633,22 @@ const products = [
     slug: "carne-hamburguesa-res",
     description:
       "Medallones de carne de res premium, 1/4 de libra. Listos para la parrilla.",
-    imageURL: "/images/carne-hamb-res.jpg",
+    imageURL: "/uploads/images/carne-hamb-res.jpg",
     categorySlug: "hamburguesas",
     price: 180.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
     name: "Carne para Hamburguesa de Pollo",
     slug: "carne-hamburguesa-pollo",
     description: "Medallones de pechuga de pollo molida. Opción más ligera.",
-    imageURL: "/images/carne-hamb-pollo.jpg",
+    imageURL: "/uploads/images/carne-hamb-pollo.jpg",
     categorySlug: "hamburguesas",
     price: 150.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -655,11 +656,11 @@ const products = [
     slug: "mini-burgers-congelado",
     description:
       "Medallones pequeños, perfectos para niños o botanas. Congelados individualmente.",
-    imageURL: "/images/mini-burgers.jpg",
+    imageURL: "/uploads/images/mini-burgers.jpg",
     categorySlug: "hamburguesas",
     price: 250.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -667,11 +668,11 @@ const products = [
     slug: "pan-hamburguesa-artesanal",
     description:
       "Pan suave tipo brioche, ideal para elevar tu hamburguesa casera.",
-    imageURL: "/images/pan-hamb.jpg",
+    imageURL: "/uploads/images/pan-hamb.jpg",
     categorySlug: "hamburguesas",
     price: 45.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 
@@ -683,11 +684,11 @@ const products = [
     slug: "nuggets-pollo-clasicos",
     description:
       "Nuggets de pollo empanizados, perfectos para freír o air fryer. Sabor familiar.",
-    imageURL: "/images/nuggets-clasicos.jpg",
+    imageURL: "/uploads/images/nuggets-clasicos.jpg",
     categorySlug: "nuggets",
     price: 180.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -695,11 +696,11 @@ const products = [
     slug: "tiras-pollo-empanizadas",
     description:
       "Tiras de pechuga de pollo, crujientes y ya sazonadas. Ideales para ensaladas o sandwiches.",
-    imageURL: "/images/tiras-pollo.jpg",
+    imageURL: "/uploads/images/tiras-pollo.jpg",
     categorySlug: "nuggets",
     price: 120.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -707,11 +708,11 @@ const products = [
     slug: "bites-pescado-congelado",
     description:
       "Pequeños trozos de pescado blanco empanizado. Una alternativa a la carne.",
-    imageURL: "/images/bites-pescado.jpg",
+    imageURL: "/uploads/images/bites-pescado.jpg",
     categorySlug: "nuggets",
     price: 140.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
   {
@@ -719,15 +720,14 @@ const products = [
     slug: "dip-miel-mostaza",
     description:
       "Salsa clásica de miel mostaza para acompañar tus nuggets y tiras de pollo.",
-    imageURL: "/images/dip-miel-mostaza.jpg",
+    imageURL: "/uploads/images/dip-miel-mostaza.jpg",
     categorySlug: "nuggets",
     price: 45.0,
     stock: 50,
-    unitType: "unit",
+    unitType: "Paquete", // 🟢 ACTUALIZADO
     isAvailable: true,
   },
 ];
-
 
 /**
  * Helper para marcar productos/variaciones como 'isIntegerUnit' y normalizar la etiqueta de unidad.

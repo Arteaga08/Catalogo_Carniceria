@@ -15,7 +15,7 @@ const initialProductData = {
   price: "",
   stock: "",
   categorySlug: "",
-  unitType: "kilogramo", // 🟢 CORRECCIÓN 1: Usar el valor del enum completo
+  unitType: "Kg", // 🟢 CORREGIDO: Usamos el valor estandarizado ("Kg")
   isAvailable: true,
 };
 
@@ -87,7 +87,7 @@ const ProductFormPage = () => {
               price: data.price ? String(data.price) : "",
               stock: data.stock ? String(data.stock) : "",
               categorySlug: data.categorySlug || "",
-              unitType: data.unitType || "kilogramo", // 🟢 Usar "kilogramo" como fallback
+              unitType: data.unitType || "Kg", // 🟢 CORREGIDO: Usamos "Kg" como fallback
               isAvailable:
                 data.isAvailable !== undefined ? data.isAvailable : true,
               imageURL: data.imageURL || null,
@@ -131,7 +131,7 @@ const ProductFormPage = () => {
   };
 
   // ==========================================================
-  // FUNCIÓN handleSubmit (SIN CAMBIOS REQUERIDOS AQUÍ)
+  // FUNCIÓN handleSubmit (CORREGIDA)
   // ==========================================================
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -153,26 +153,34 @@ const ProductFormPage = () => {
     if (imageFile) {
       formData.append("image", imageFile);
     } else if (isEditMode && productData.imageURL) {
+      // Nota: Si no hay un nuevo archivo, el backend debería ignorar imageURL
+      // y mantener la imagen existente. Esta línea es redundante si el
+      // backend maneja la ausencia de 'image', pero se mantiene por si acaso.
       formData.append("imageURL", productData.imageURL);
     }
 
+    // 🟢 CORRECCIÓN CLAVE: Aseguramos que TODOS los campos requeridos
+    // (incluyendo el slug) se añadan al FormData.
     for (const key in finalProductData) {
       const value = finalProductData[key];
 
-      if (key === "imageURL" && !imageFile && isEditMode) {
-        continue;
-      }
-      if (key === "slug") {
+      // Omitir 'imageURL' solo si NO se subió un nuevo archivo.
+      if (key === "imageURL" && !imageFile) {
         continue;
       }
 
-      // Corregido: Ya no necesitamos el fallback 'kg' ya que usamos 'kilogramo' en initialProductData
+      // El 'slug' DEBE ser enviado, por lo tanto, la línea de 'continue' se elimina.
+
+      // Convertir booleanos y agregar valores existentes
       if (typeof value === "boolean") {
         formData.append(key, value.toString());
       } else if (value !== null && value !== undefined) {
         formData.append(key, value);
       }
     }
+
+    // Código de depuración para ver los datos enviados (opcional, puedes borrarlo)
+    // console.log("Datos a enviar (POST/PUT):", Object.fromEntries(formData.entries()));
 
     try {
       let response;
@@ -191,6 +199,7 @@ const ProductFormPage = () => {
         );
         alert("¡Producto actualizado con éxito!");
       } else {
+        // Línea que generó error 400 (Bad Request)
         response = await axios.post(`${API_URL}/products`, formData, config);
         alert("¡Producto creado con éxito!");
         setProductData(initialProductData);
@@ -259,7 +268,6 @@ const ProductFormPage = () => {
         onSubmit={handleSubmit}
         className="bg-white p-6 rounded-lg shadow-xl"
       >
-        {/* ... (Nombre, Slug, Descripción, Precio, Stock) ... */}
         {/* Nombre y Slug */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
@@ -337,7 +345,7 @@ const ProductFormPage = () => {
             />
           </div>
 
-          {/* 🟢 TIPO DE UNIDAD CORREGIDO */}
+          {/* 🟢 TIPO DE UNIDAD (Valores estandarizados) */}
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
               Tipo de Unidad
@@ -349,11 +357,9 @@ const ProductFormPage = () => {
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-white"
               required
             >
-              <option value="kilogramo">Kilogramo (kg)</option>{" "}
-              {/* ⬅️ VALOR CORREGIDO */}
-              <option value="paquete">Paquete</option>{" "}
-              {/* ⬅️ VALOR CORREGIDO */}
-              <option value="pieza">Pieza</option> {/* ⬅️ VALOR CORREGIDO */}
+              <option value="Kg">Kilogramo (Kg)</option>{" "}
+              <option value="Paquete">Paquete</option>{" "}
+              <option value="Pieza">Pieza</option>
             </select>
           </div>
 
@@ -392,7 +398,7 @@ const ProductFormPage = () => {
           </div>
         </div>
 
-        {/* Imagen y Disponibilidad (sin cambios) */}
+        {/* Imagen y Disponibilidad */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
           <div>
             <label className="block text-gray-700 font-semibold mb-2">
@@ -405,13 +411,13 @@ const ProductFormPage = () => {
               onChange={handleImageChange}
               className="w-full p-3 border border-gray-300 rounded-lg focus:ring-red-500 focus:border-red-500 bg-white"
               required={
-                !isEditMode ||
-                (isEditMode && !productData.imageURL && !imageFile)
+                !isEditMode || // Requerido en modo Creación (POST)
+                (isEditMode && !productData.imageURL && !imageFile) // Requerido en Edición si no hay URL previa
               }
             />
             {isEditMode && productData.imageURL && (
               <p className="text-sm text-gray-500 mt-2">
-                Imagen actual cargada.
+                Imagen actual cargada. Seleccione un archivo para cambiarla.
               </p>
             )}
           </div>
@@ -434,7 +440,7 @@ const ProductFormPage = () => {
           </div>
         </div>
 
-        {/* Botón de Submit y Mensajes (sin cambios) */}
+        {/* Botón de Submit y Mensajes */}
         <div className="mt-8">
           <button
             type="submit"

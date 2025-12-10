@@ -1,7 +1,7 @@
 // backend/routes/uploadRoutes.js
 import express from "express";
 const router = express.Router();
-import { upload } from "../middleware/uploadMiddleware.js";
+import { uploadProducts as upload } from "../middleware/uploadMiddleware.js";
 import { protect, admin, editor } from "../middleware/authMiddleware.js";
 
 // Middleware combinado para verificar si es admin o editor

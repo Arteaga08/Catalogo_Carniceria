@@ -15,9 +15,11 @@ import {
   validateSlugParam,
 } from "../middleware/validationMiddleware.js";
 
+import { uploadCategories } from "../middleware/uploadMiddleware.js";
+
 router
   .route("/")
-  .post(protect, admin, validateCategory, createCategory) // Validar creación de categoría
+  .post(protect, admin, uploadCategories.single("image"), validateCategory, createCategory) // Validar creación de categoría
   .get(getCategories);
 
 router
@@ -27,6 +29,7 @@ router
     protect,
     admin,
     validateSlugParam,
+    uploadCategories.single("image"),
     validateCategory,
     updateCategory
   ) // Validar slug y datos de categoría

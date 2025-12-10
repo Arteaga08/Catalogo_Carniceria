@@ -18,7 +18,7 @@ import {
   handleValidationErrors,
 } from "../middleware/validationMiddleware.js";
 
-import { upload } from "../middleware/uploadMiddleware.js";
+import { uploadProducts } from "../middleware/uploadMiddleware.js";
 
 import { protect, admin, editor } from "../middleware/authMiddleware.js";
 import { query, param } from "express-validator";
@@ -85,14 +85,7 @@ const debugMiddleware = (req, res, next) => {
 router.route("/").post(
   protect,
   editor,
-  upload.single("image"),
-  (req, res, next) => {
-    console.log(
-      "DEBUG 2: req.body DESPUÉS de Multer (DEBE FALLAR AQUÍ):",
-      req.body
-    );
-    next();
-  },
+  uploadProducts.single("image"),
   validateProduct,
   createProduct
 ); // Validar datos del producto al crear
@@ -107,7 +100,7 @@ router
     protect,
     editor,
     validateProductSlugParam,
-    upload.single("image"),
+    uploadProducts.single("image"),
     validateProduct,
     updateProduct
   ); // Validar slug y datos del producto

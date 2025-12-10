@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { fetchProductBySlug } from "../api/apiService";
-import { useCart } from "../context/CartCotext";
+import { useCart } from "../context/CartCotext"; // Asegúrate que la ruta sea CartContext (no CartCotext)
 import { getAbsoluteImageUrl } from "../api/apiService";
 
 const ProductDetailPage = () => {
@@ -34,11 +34,7 @@ const ProductDetailPage = () => {
         if (data && data.name) {
           setProduct(data);
           console.log("Producto cargado con éxito:", data.name);
-
-          // ✅ CORRECCIÓN: Establecer la cantidad inicial a 1.
-          // 1.0 es válido tanto para unidades enteras como fraccionables (cuyo min es 0.5).
           setQuantity(1);
-          // (quantityInput se actualizará por el siguiente useEffect)
         } else {
           setError("El producto no existe o la respuesta fue vacía.");
         }
@@ -53,120 +49,71 @@ const ProductDetailPage = () => {
     loadProduct();
   }, [slug]);
 
-  // --- Lógica para obtener la unidad y el precio ---
-  const productUnitLabel =
-    Array.isArray(product?.variations) && product.variations.length > 0
-      ? product.variations[0].unitName ||
-        product.variations[0].unitLabel ||
-        "Kg"
-      : product?.unitName || "Kg";
+  // =====================================================================
+  // 🟢 1. LÓGICA DE UNIDAD Y PRECIO (SIMPLIFICADA)
+  // =====================================================================
 
-  const displayPrice =
-    product?.price ||
-    (Array.isArray(product?.variations) && product.variations[0]?.price) ||
-    null;
-  // --- Fin Lógica ---
+  // Leemos directamente 'unitType' del producto. Si no existe, fallback a "Kg".
+  const productUnitLabel = product?.unitType || "Kg";
 
-  // 🚩 ZONA DE CÁLCULO DE UNIDADES (CORREGIDA LA UBICACIÓN EN MENSAJE ANTERIOR)
-  // Determinar si la unidad debe tratarse como entera o fraccionable.
-  const isInteger = (() => {
-    // 1) Si la variación trae explícitamente isIntegerUnit, respetarla
-    if (Array.isArray(product?.variations) && product.variations.length > 0) {
-      const v = product.variations[0];
-      // Usamos ?. para acceso seguro
-      if (typeof v?.isIntegerUnit === "boolean") return v.isIntegerUnit;
-    }
+  // Leemos directamente 'price'.
+  const displayPrice = product?.price || 0;
 
-    // 2) Si el producto trae isIntegerUnit, respetarlo
-    if (typeof product?.isIntegerUnit === "boolean")
-      return product.isIntegerUnit;
+  // =====================================================================
+  // 🟢 2. DETECCIÓN DE ENTEROS (BASED EN TUS NUEVOS VALORES)
+  // =====================================================================
 
-    // 3) Detección por texto en unitName/unitLabel
-    const unit = (
-      (product?.variations && product.variations[0]?.unitName) ||
-      (product?.variations && product.variations[0]?.unitName) ||
-      product?.unitName ||
-      ""
-    )
-      .toString()
-      .toLowerCase();
+  // Si es "Paquete" o "Pieza", forzamos enteros. Si es "Kg", permitimos decimales.
+  const isInteger =
+    productUnitLabel === "Paquete" || productUnitLabel === "Pieza";
 
-    const integerUnitPatterns = [
-      "unidad",
-      "unidades",
-      "pieza",
-      "piezas",
-      "pack",
-      "paquete",
-      "paquetes",
-      "bolsa",
-      "bolsas",
-      "huevo",
-      "huevos",
-      "paq",
-      "pza",
-    ];
+  // Configuración del input numérico
+  const stepVal = isInteger ? 1 : 0.5; // Salto de 1 en 1 para enteros, 0.5 para Kg
+  const minVal = isInteger ? 1 : 0.5; // Mínimo 1 para enteros, 0.5 (medio kilo) para Kg
+  const decimals = isInteger ? 0 : 1; // Sin decimales visuales para enteros
 
-    return integerUnitPatterns.some((w) => unit.includes(w));
-  })();
-
-  const stepVal = isInteger ? 1 : 0.5;
-  const minVal = isInteger ? 1 : 0.5;
-  const decimals = isInteger ? 0 : 1;
-  // ----------------------------------------------------------------------------------
+  // =====================================================================
 
   // Sincronizar el input textual con la cantidad cuando cambien quantity o decimals
   useEffect(() => {
-    // Usamos Number(quantity) para asegurar que el toFixed funcione
     setQuantityInput(Number(quantity).toFixed(decimals));
   }, [quantity, decimals]);
 
+  // =====================================================================
+  // 🟢 3. AÑADIR AL CARRITO (LIMPIEZA DE VARIACIONES)
+  // =====================================================================
   const handleAddToCart = () => {
-    // Usamos productUnitLabel para el mensaje de alerta
     if (!product || quantity < minVal) {
-      // ⚠️ Usamos una alerta temporal, idealmente se usaría un modal
       alert(
         `Por favor, selecciona una cantidad válida (mínimo ${minVal} ${productUnitLabel}).`
       );
       return;
     }
 
-    let variation = null;
-    let finalPrice = displayPrice || 0;
-    let finalUnitLabel = productUnitLabel;
+    // Creamos el objeto limpio para el carrito
+    // Ya no dependemos de "variations" porque tu modelo es plano ahora.
+    const itemToAdd = {
+      _id: product._id,
+      price: displayPrice,
+      unitLabel: productUnitLabel,
+      // Guardamos si es entero para que el carrito sepa cómo comportarse al editar
+      isIntegerUnit: isInteger,
+      // Pasamos el resto de datos del producto necesarios
+      name: product.name,
+      slug: product.slug,
+      imageURL: product.imageURL,
+    };
 
-    if (Array.isArray(product.variations) && product.variations.length > 0) {
-      const backendVariation = product.variations[0];
-      finalPrice = backendVariation.price || finalPrice;
-      finalUnitLabel =
-        backendVariation.unitName ||
-        backendVariation.unitLabel ||
-        finalUnitLabel;
+    // Nota: addToCart en tu context probablemente espera (product, variation, quantity)
+    // Como ya no usas variaciones, pasamos 'itemToAdd' como segundo argumento actuando como la "variación seleccionada"
+    // o adaptamos según tu CartContext. Asumiremos que el segundo argumento son los detalles extra.
 
-      variation = {
-        ...backendVariation,
-        unitLabel: finalUnitLabel,
-        // preservar o inferir si la variación debe ser entera
-        isIntegerUnit:
-          typeof backendVariation.isIntegerUnit === "boolean"
-            ? backendVariation.isIntegerUnit
-            : isInteger,
-      };
-    } else {
-      variation = {
-        _id: product._id,
-        price: finalPrice,
-        unitLabel: finalUnitLabel,
-        isIntegerUnit: isInteger,
-      };
-    }
+    addToCart(product, itemToAdd, quantity);
 
-    addToCart(product, variation, quantity);
-    // ⚠️ Usamos una alerta temporal, idealmente se usaría un modal
     alert(
-      `¡Listo para agregar ${quantity.toFixed(
+      `¡Listo! Se agregaron ${quantity.toFixed(
         decimals
-      )} ${productUnitLabel} de ${product.name} al carrito!`
+      )} ${productUnitLabel} de "${product.name}" al carrito.`
     );
   };
 
@@ -195,12 +142,11 @@ const ProductDetailPage = () => {
     );
   }
 
-  // --- Renderizado del Detalle del Producto (si product existe) ---
+  // --- Renderizado del Detalle del Producto ---
 
   const imageUrl = getAbsoluteImageUrl(product.imageURL);
 
   const rawCategorySlug = product.categorySlug || product.category;
-
   const displayCategory = rawCategorySlug
     ? rawCategorySlug.replace(/-/g, " ").toUpperCase()
     : "CATEGORÍA";
@@ -240,12 +186,11 @@ const ProductDetailPage = () => {
 
             <hr className="my-6" />
 
-            {/* Selector de Cantidad (Usando la lógica dinámica) */}
+            {/* Selector de Cantidad */}
             <h3 className="text-xl font-bold text-gray-800 mb-3">
               Seleccionar Cantidad
             </h3>
             <div className="flex items-center space-x-4 mb-4">
-              {/* ⬅️ CONTROLES DINÁMICOS BASADOS EN isInteger */}
               <div className="flex items-center border-2 border-gray-300 rounded-lg overflow-hidden">
                 <button
                   type="button"
@@ -290,7 +235,7 @@ const ProductDetailPage = () => {
                   min={minVal}
                   step={stepVal}
                   className="w-28 text-center p-3 text-xl font-semibold focus:border-red-500 focus:outline-none"
-                  disabled={displayPrice === null}
+                  disabled={displayPrice === 0}
                 />
                 <button
                   type="button"
@@ -327,7 +272,7 @@ const ProductDetailPage = () => {
             <button
               className="cursor-pointer w-full md:w-auto bg-red-700 text-white text-xl py-3 px-8 rounded-xl font-bold hover:bg-red-800 transition-colors shadow-lg disabled:bg-gray-400"
               onClick={handleAddToCart}
-              disabled={displayPrice === null || quantity < minVal}
+              disabled={displayPrice === 0 || quantity < minVal}
             >
               🛒 Añadir al Carrito
             </button>

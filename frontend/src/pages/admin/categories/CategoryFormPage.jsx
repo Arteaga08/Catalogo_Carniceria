@@ -23,6 +23,10 @@ const CategoryFormPage = () => {
   const [allCategories, setAllCategories] = useState([]); // Para el selector de categorías padre
   const [isEditMode, setIsEditMode] = useState(false);
   const [loading, setLoading] = useState(true); // Siempre cargamos al inicio
+
+  const [imageFile, setImageFile] = useState(null);
+  const [currentImageURL, setCurrentImageURL] = useState(null);
+  
   const [error, setError] = useState(null);
   const [serverErrors, setServerErrors] = useState({});
 
@@ -32,9 +36,6 @@ const CategoryFormPage = () => {
     const fetchAllData = async () => {
       setLoading(true);
       setError(null);
-
-      console.log("Token actual:", token); // ¿Es NULL o es un string largo?
-      console.log("Header que se envía:", `Bearer ${token}`); // ¿Hay
 
       try {
         // Cargar todas las categorías
@@ -72,6 +73,9 @@ const CategoryFormPage = () => {
             parentSlug: parentSlug,
             categoryPrincipal: loadedData.categoryPrincipal || loadedData.slug,
           });
+          if (loadedData.imageURL) {
+            setCurrentImageURL(loadedData.imageURL);
+          }
         } else {
           // Modo Creación
           setCategoryData(initialCategoryState);
@@ -132,6 +136,10 @@ const CategoryFormPage = () => {
     }
   };
 
+  const handleImageChange = (e) => {
+    setImageFile(e.target.files[0]);
+  };
+
   // 🟢 FUNCIÓN AGREGADA/CORREGIDA: Maneja el cambio de la categoría padre y categoryPrincipal
   const handleParentSlugChange = (e) => {
     const newParentSlug = e.target.value;
@@ -164,20 +172,40 @@ const CategoryFormPage = () => {
 
       const method = isEditMode ? axios.put : axios.post;
 
-      // 🟢 CORRECCIÓN: Crear dataToSend asegurando todos los campos
-      const dataToSend = {
-        name: categoryData.name,
-        slug: categoryData.slug,
-        description: categoryData.description || undefined, // Envía undefined si está vacío
-        // Si parentSlug es una cadena vacía, enviamos undefined para que el backend lo ignore.
-        parentSlug: categoryData.parentSlug || undefined,
-        // Aseguramos el envío de categoryPrincipal, que es requerido por Mongoose
-        categoryPrincipal: categoryData.categoryPrincipal || categoryData.slug,
-      };
+      // 🟢 CLAVE: Usar FormData para enviar archivos
+      const formData = new FormData();
 
-      // 🟢 CORRECCIÓN: Usar dataToSend en la llamada (NO categoryData)
-      await method(url, dataToSend, {
-        headers: { Authorization: `Bearer ${token}` },
+      formData.append("name", categoryData.name);
+      formData.append("slug", categoryData.slug);
+
+      // Adjuntar solo si tienen valor
+      if (categoryData.description) {
+        formData.append("description", categoryData.description);
+      }
+      if (categoryData.parentSlug) {
+        formData.append("parentSlug", categoryData.parentSlug);
+      }
+      // categoryPrincipal es obligatorio
+      formData.append(
+        "categoryPrincipal",
+        categoryData.categoryPrincipal || categoryData.slug
+      );
+
+      // 2. Adjuntar la imagen si fue seleccionada
+      if (imageFile) {
+        formData.append("image", imageFile); // 'image' debe coincidir con el campo esperado por Multer en el backend
+      } else if (isEditMode && currentImageURL) {
+        // Si no se cambia la imagen pero estamos editando, enviamos la URL actual
+        formData.append("imageURL", currentImageURL);
+      }
+
+      // 3. Enviar el FormData con el Content-Type correcto (manejado automáticamente por axios/FormData)
+      await method(url, formData, {
+        // ⬅️ Cambiamos dataToSend por formData
+        headers: {
+          Authorization: `Bearer ${token}`,
+          // NOTA: No especificar Content-Type. FormData lo maneja como multipart/form-data
+        },
       });
 
       // Éxito: Navegar al listado de categorías
@@ -308,6 +336,43 @@ const CategoryFormPage = () => {
             <p className="text-red-500 text-xs mt-1">
               {serverErrors.description}
             </p>
+          )}
+        </div>
+
+        {/* Carga de Imagen */}
+        <div className="border p-4 rounded-md bg-gray-50">
+          <label
+            htmlFor="image"
+            className="block text-sm font-medium text-gray-700 mb-2"
+          >
+            Imagen de la Categoría
+          </label>
+          <input
+            type="file"
+            id="image"
+            name="image"
+            accept="image/*"
+            onChange={handleImageChange}
+            className="mt-1 block w-full text-sm text-gray-900 border border-gray-300 rounded-lg cursor-pointer bg-white focus:outline-none"
+            // Requerir solo si no estamos editando o si no hay URL de imagen previa
+            required={!isEditMode && !currentImageURL}
+          />
+
+          {isEditMode && currentImageURL && !imageFile && (
+            <div className="mt-3 text-sm text-gray-600 flex items-center">
+              <span className="mr-2">Imagen actual:</span>
+              <img
+                src={`${API_BASE_URL}${currentImageURL}`} // Usar URL absoluta para visualizar
+                alt="Imagen actual de la categoría"
+                className="w-16 h-16 object-cover rounded-md border border-gray-300"
+              />
+              <span className="ml-3 text-xs text-red-500">
+                (Selecciona un nuevo archivo para reemplazarla)
+              </span>
+            </div>
+          )}
+          {serverErrors.image && (
+            <p className="text-red-500 text-xs mt-1">{serverErrors.image}</p>
           )}
         </div>
 

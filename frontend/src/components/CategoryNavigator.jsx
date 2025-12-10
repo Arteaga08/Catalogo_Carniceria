@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 
+import { getAbsoluteImageUrl } from "../api/apiService";
+
 const CategoryNavigator = ({
   categories,
   activeSlug,
@@ -108,12 +110,13 @@ const CategoryNavigator = ({
 
           {itemsToDisplay.map((item) => {
             // Determinar src robustamente y evitar reusar un valor global
-            const imgSrc =
+            const imgSrc = getAbsoluteImageUrl (
               item.imageURL ||
               item.imageUrl ||
               item.iconURL ||
               item.image ||
-              "/images/default_category_icon.png";
+              "/images/default_category_icon.png"
+            )
             // DEBUG: ver qué src se está usando por item
             // eslint-disable-next-line no-console
             console.log(
@@ -121,6 +124,8 @@ const CategoryNavigator = ({
               item.displayName,
               imgSrc
             );
+
+            
 
             if (isShowingSubcategories) {
               return (

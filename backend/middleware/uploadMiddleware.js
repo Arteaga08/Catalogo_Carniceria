@@ -1,66 +1,67 @@
+// backend/middleware/uploadMiddleware.js
+
 import multer from "multer";
 import path from "path";
 import fs from "fs";
-import { fileURLToPath } from "url"; // Necesario para obtener __dirname en ES Modules
+import { fileURLToPath } from "url";
 
-// 🟢 1. DEFINICIÓN DE RUTAS ABSOLUTAS
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-// Subimos un nivel de 'middleware' para llegar a la raíz del 'backend'
 const ROOT_DIR = path.join(__dirname, "..");
 
-// 2. Configuración del almacenamiento de Multer
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    // 🟢 CORRECCIÓN: Usamos la RUTA ABSOLUTA garantizada
-    const uploadPath = path.join(ROOT_DIR, "uploads", "products");
+// 🟢 FUNCIÓN QUE CREA LA INSTANCIA DE MULTER CON DESTINO DINÁMICO
+const createUploader = (targetFolder = "temp") => {
+  const storage = multer.diskStorage({
+    destination(req, file, cb) {
+      // 🟢 USAMOS LA CARPETA OBJETIVO DEFINIDA
+      const uploadPath = path.join(ROOT_DIR, "uploads", targetFolder);
 
-    // Log para depuración (opcional, ayuda a verificar la ruta)
-    console.log(`RUTA DE GUARDADO ABSOLUTA DE MULTER: ${uploadPath}`);
+      console.log(`RUTA DE GUARDADO ABSOLUTA: ${uploadPath}`);
 
-    // Asegura que el directorio exista (con la bandera 'recursive: true')
-    fs.mkdir(uploadPath, { recursive: true }, (err) => {
-      if (err) {
-        console.error(
-          "🚨 Error al crear el directorio de subida (Permisos):",
-          err
-        );
-        return cb(err);
-      }
-      cb(null, uploadPath);
-    });
-  },
-  filename(req, file, cb) {
-    // Usa un nombre único basado en el campo y la marca de tiempo
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
+      fs.mkdir(uploadPath, { recursive: true }, (err) => {
+        if (err) {
+          console.error(
+            "🚨 Error al crear el directorio de subida (Permisos):",
+            err
+          );
+          return cb(err);
+        }
+        cb(null, uploadPath);
+      });
+    },
+    filename(req, file, cb) {
+      cb(
+        null,
+        `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
+      );
+    },
+  });
+
+  function checkFileType(file, cb) {
+    const filetypes = /jpeg|jpg|png|gif|webp/;
+    const extname = filetypes.test(
+      path.extname(file.originalname).toLowerCase()
     );
-  },
-});
+    const mimetype = filetypes.test(file.mimetype);
 
-// 3. Filtro para validar el tipo de archivo (solo imágenes)
-function checkFileType(file, cb) {
-  const filetypes = /jpeg|jpg|png|gif|webp/;
-  const extname = filetypes.test(path.extname(file.originalname).toLowerCase());
-  const mimetype = filetypes.test(file.mimetype);
-
-  if (extname && mimetype) {
-    return cb(null, true);
-  } else {
-    cb("Solo se permiten imágenes (JPEG, JPG, PNG, GIF, WebP)!", false);
+    if (extname && mimetype) {
+      return cb(null, true);
+    } else {
+      cb("Solo se permiten imágenes (JPEG, JPG, PNG, GIF, WebP)!", false);
+    }
   }
-}
 
-// 4. Inicializar Multer con la configuración
-const upload = multer({
-  storage: storage,
-  // Descomenta la siguiente línea si quieres activar el filtro de tipo de archivo
-  // fileFilter: function (req, file, cb) {
-  //   checkFileType(file, cb);
-  // },
-  limits: { fileSize: 5 * 1024 * 1024 }, // Límite de tamaño: 5MB
-});
+  return multer({
+    storage: storage,
+    fileFilter: function (req, file, cb) {
+      checkFileType(file, cb);
+    },
+    limits: { fileSize: 5 * 1024 * 1024 }, // Límite de tamaño: 5MB
+  });
+};
 
-// Exportar la instancia de Multer
-export { upload };
+// 🟢 EXPORTACIONES ESPECÍFICAS
+const uploadProducts = createUploader("products");
+const uploadCategories = createUploader("categories");
+
+export { uploadProducts, uploadCategories };

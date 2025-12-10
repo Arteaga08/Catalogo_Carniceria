@@ -13,6 +13,10 @@ export const getAbsoluteImageUrl = (relativePath) => {
     return "https://via.placeholder.com/600x400?text=Imagen+No+Disponible";
   }
 
+  if (relativePath.startsWith("http")) {
+    return relativePath; 
+  }
+
   // Aseguramos que la ruta no comience con un '/' para evitar un doble slash (ej: //uploads/...)
   const cleanPath = relativePath.startsWith("/")
     ? relativePath.substring(1)
